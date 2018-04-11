@@ -133,6 +133,7 @@ for k in range(1, scrapbooking_source.region_combination+1):
                         generating.write(recording[i])
                 generating.close()
                 os.system('python scrapbooking_IR.py')
+                """
                 os.system('llvm-as answer_ok.ll -o answer_ok.bc')
                 os.chdir('/home/klee/')
                 os.system('cp region_based/answer_ok.bc .')
@@ -146,7 +147,7 @@ for k in range(1, scrapbooking_source.region_combination+1):
                 os.system('KTEST_FILE=klee-last/test000001.ktest ./answer_ok')
                 exe_result = subprocess.getoutput('echo $?')
                 print ("result: ", exe_result)
-		
+		"""
 		#os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
         	#os.system('gcc -o answer_ok answer_ok.s -lpthread')
         	#os.system('./answer_ok')
