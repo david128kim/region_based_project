@@ -1,0 +1,4 @@
+region1:
+	Global *= 3;
+region2:
+	Global -= 10;

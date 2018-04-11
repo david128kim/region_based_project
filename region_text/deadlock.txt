@@ -1,0 +1,10 @@
+region1:
+	pthread_mutex_lock(&a);
+  	pthread_mutex_lock(&b);
+  	pthread_mutex_unlock(&b);
+  	pthread_mutex_unlock(&a);
+region2:
+	pthread_mutex_lock(&b);
+  	pthread_mutex_lock(&a);
+  	pthread_mutex_unlock(&a);
+  	pthread_mutex_unlock(&b);
