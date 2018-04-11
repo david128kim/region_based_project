@@ -6,7 +6,7 @@ import string
 from app_r1 import execution_path_r1
 from app_r2 import execution_path_r2
 
-source_line, source_r1, source_r2, region_combination, ir_r1, ir_r2, ir_line, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2 = [], [], [], 0, [], [], [], 0, 0, 0, 0, 0, 0
+source_line, source_r, source_r1, source_r2, region_combination, ir_r1, ir_r2, ir_line, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2 = [], [], [], [], 0, [], [], [], 0, 0, 0, 0, 0, 0
 program_name = input("Please key in your program name: \n")
 shared_data = input("Please key in your shared data name: \n")
 file = open(program_name)
@@ -18,6 +18,7 @@ for line in file:
         source_line.append(line)
 file.close()
 
+'''
 for i in range(1, execution_path_r1+1):
 	source_r1 =[]
 	region1 = open('exe_r1_path'+str(i)+'.c','r')
@@ -55,22 +56,26 @@ for i in range(1, execution_path_r2+1):
         os.system('mv exe_r2_path'+str(i)+'_ok.c exe_source/')
         os.system('mv exe_r2_path'+str(i)+'.ll exe_IR/')
         os.system('rm exe_r2_path'+str(i)+'.c')
+'''
+
+region = open("region_text/datarace.txt", 'r')
+for line in region:
+	if "region" not in line:
+		source_r.append(line)
 
 whole.write('#include "../klee_src/include/klee/klee.h"\n')
 for k in range(0, len(source_line)):
 	whole.write(source_line[k])
 whole.write('int main(int argc, char **argv) {\n')
 whole.write('klee_make_symbolic(&'+shared_data+', sizeof('+shared_data+'), "'+shared_data+'");\n')
-for k in range(0, len(source_r1)):
-        whole.write(source_r1[k])
-for k in range(0, len(source_r2)):
-        whole.write(source_r2[k])
+for k in range(0, len(source_r)):
+        whole.write(source_r[k])
 whole.write('return '+shared_data+'; }\n')
 whole.close()
 
-os.system('llvm-as incorporate_constrain.ll -o incorporate_constrain.bc')
-os.system('klee --libc=uclibc --posix-runtime incorporate_constrain.bc')
-os.system('klee incorporate_constrain.bc')
+os.system('llvm-as whole_program.ll -o whole_program.bc')
+os.system('klee --libc=uclibc --posix-runtime whole_program.bc')
+os.system('klee whole_program.bc')
 #os.system('ktest-tool --write-ints klee-last/test000001.ktest')
 
 
