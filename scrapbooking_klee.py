@@ -6,11 +6,13 @@ import string
 from app_r1 import execution_path_r1
 from app_r2 import execution_path_r2
 
-source_line, source_r, source_r1, source_r2, region_combination, ir_r1, ir_r2, ir_line, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2 = [], [], [], [], 0, [], [], [], 0, 0, 0, 0, 0, 0
+ValidInputs, source_line, source_r, source_r1, source_r2, region_combination, ir_r1, ir_r2, ir_line, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2 = [], [], [], [], [], 0, [], [], [], 0, 0, 0, 0, 0, 0
 program_name = input("Please key in your program name: \n")
 shared_data = input("Please key in your shared data name: \n")
 file = open(program_name)
+klee = open('klee_program.c', 'w')
 whole = open('whole_program.c', 'w')
+
 
 for line in file:
         if "(" in line:
@@ -63,20 +65,33 @@ for line in region:
 	if "region" not in line:
 		source_r.append(line)
 
-whole.write('#include "../klee_src/include/klee/klee.h"\n')
+klee.write('#include "../klee_src/include/klee/klee.h"\n')
 for k in range(0, len(source_line)):
+	klee.write(source_line[k])
 	whole.write(source_line[k])
+klee.write('int main(int argc, char **argv) {\n')
 whole.write('int main(int argc, char **argv) {\n')
-whole.write('klee_make_symbolic(&'+shared_data+', sizeof('+shared_data+'), "'+shared_data+'");\n')
+klee.write('klee_make_symbolic(&'+shared_data+', sizeof('+shared_data+'), "'+shared_data+'");\n')
 for k in range(0, len(source_r)):
+        klee.write(source_r[k])
         whole.write(source_r[k])
+klee.write('return '+shared_data+'; }\n')
+whole.write('printf('+shared_data+'); \n')
 whole.write('return '+shared_data+'; }\n')
+klee.close()
 whole.close()
-
-os.system('llvm-as whole_program.ll -o whole_program.bc')
-os.system('klee --libc=uclibc --posix-runtime whole_program.bc')
-os.system('klee whole_program.bc')
-#os.system('ktest-tool --write-ints klee-last/test000001.ktest')
+os.system('clang -Os -S -emit-llvm klee_program.c -o klee_program.ll')
+os.system('clang -Os -S -emit-llvm whole_program.c -o whole_program.ll')
+os.system('llvm-as klee_program.ll -o klee_program.bc')
+os.system('klee --libc=uclibc --posix-runtime klee_program.bc')
+os.system('klee klee_program.bc')
+num = subprocess.getoutput('find klee-last/ -type f |wc -l')
+end = int(num) - 6 + 1
+for i in range(1, end):
+        temp = subprocess.getoutput('ktest-tool --write-ints klee-last/test00000'+str(i)+'.ktest')
+        tmp = temp.split()
+        ValidInputs.append(tmp[len(tmp)-1])
+print ("valid inputs: ", ValidInputs)
 
 
 """
