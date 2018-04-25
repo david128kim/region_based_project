@@ -1,18 +1,18 @@
 import os
-#import commands
 import subprocess
 import string
 
 from app_r1 import execution_path_r1
 from app_r2 import execution_path_r2
 
-ValidInputs, source_line, source_r, source_r1, source_r2, region_combination, ir_r1, ir_r2, ir_line, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2 = [], [], [], [], [], 0, [], [], [], 0, 0, 0, 0, 0, 0
+ValidInputs, source_line, source_r, source_r1, source_r2, ir_r1, ir_r2, ir_line = [], [], [], [], [], [], [], []
+region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 program_name = input("Please key in your program name: \n")
 shared_data = input("Please key in your shared data name: \n")
+num_region = input("How many regions do you circle: \n")
 file = open(program_name)
 klee = open('klee_program.c', 'w')
 whole = open('whole_program.c', 'w')
-
 
 for line in file:
         if "(" in line:
@@ -20,45 +20,53 @@ for line in file:
         source_line.append(line)
 file.close()
 
-'''
-for i in range(1, execution_path_r1+1):
-	source_r1 =[]
-	region1 = open('exe_r1_path'+str(i)+'.c','r')
-	for line in region1:
-		source_r1.append(line)
-	region1.close()
-	sequential = open('exe_r1_path'+str(i)+'_ok.c','a')
+file = open("region_text/datarace.txt")
+for i in range(2, int(num_region)+1):
+	region = open('region'+str(i-1)+'.c', 'w')
 	for k in range(0, len(source_line)):
-		sequential.write(source_line[k])
-	sequential.write("int main() {")
-	for k in range(0, len(source_r1)):
-		sequential.write(source_r1[k])
-	sequential.write("return 0; }")
-	sequential.close()
-	os.system('clang -Os -S -emit-llvm exe_r1_path'+str(i)+'_ok.c -o exe_r1_path'+str(i)+'.ll')
-	os.system('mv exe_r1_path'+str(i)+'_ok.c exe_source/')
-	os.system('mv exe_r1_path'+str(i)+'.ll exe_IR/')
-	os.system('rm exe_r1_path'+str(i)+'.c')
+		region.write(source_line[k])
+	region.write('int main(int argc, char **argv) {\n')
+	for line in file:
+		if "region"+str(i)+"" in line:
+			region.write('return 0;\n}')
+			break
+		if "region"+str(i-1)+"" not in line:
+			region.write(line)
+	region.close()
+#######################################################################
+region = open('region'+str(num_region)+'.c', 'w')
+for k in range(0, len(source_line)):
+	region.write(source_line[k])
+region.write('int main(int argc, char **argv) {\n')
+for line in file:
+	if "region"+str(int(num_region)-1)+"" not in line:
+		region.write(line)
+region.write('return 0;\n}')
+region.close()
+file.close()
 
-for i in range(1, execution_path_r2+1):
-        source_r2 =[]
-        region2 = open('exe_r2_path'+str(i)+'.c','r')
-        for line in region2:
-                source_r2.append(line)
-        region2.close()
-        sequential = open('exe_r2_path'+str(i)+'_ok.c','a')
-        for k in range(0, len(source_line)):
-                sequential.write(source_line[k])
-        sequential.write("int main() {")
-        for k in range(0, len(source_r2)):
-                sequential.write(source_r2[k])
-        sequential.write("return 0; }")
-        sequential.close()
-        os.system('clang -Os -S -emit-llvm exe_r2_path'+str(i)+'_ok.c -o exe_r2_path'+str(i)+'.ll')
-        os.system('mv exe_r2_path'+str(i)+'_ok.c exe_source/')
-        os.system('mv exe_r2_path'+str(i)+'.ll exe_IR/')
-        os.system('rm exe_r2_path'+str(i)+'.c')
-'''
+for i in range(1, int(num_region)+1):
+	os.system('clang -Os -S -emit-llvm region'+str(i)+'.c -o region'+str(i)+'.ll')
+	os.system('mv region'+str(i)+'.ll exe_IR/')
+#######################################################################
+for i in range(1, int(num_region)+1):
+	ir_line =[]
+	counter_region = 0
+	region = open('exe_IR/region'+str(i)+'.ll','r')
+	for line in region:
+		counter_region += 1 
+		ir_line.append(line)
+		if "define" in line:
+			entry_region = counter_region
+		elif "ret" in line:
+			return_region = counter_region
+	sequential = open('concurrent_program.ll','a')
+	sequential.write('region'+str(i)+': \n')
+	for k in range(entry_region, return_region-1):
+		sequential.write(ir_line[k])
+	region.close()
+sequential.close()
+os.system('mv concurrent_program.ll exe_concurrent/')
 
 region = open("region_text/datarace.txt", 'r')
 for line in region:
@@ -93,42 +101,3 @@ for i in range(1, end):
         ValidInputs.append(tmp[len(tmp)-1])
 print ("valid inputs: ", ValidInputs)
 
-
-"""
-os.system('clang -Os -S -emit-llvm whole_program.c -o whole_program.ll')
-
-for i in range(1, execution_path_r1+1):
-	ir_r1 =[]
-	counter_r1 = 0
-	region1 = open('exe_IR/exe_r1_path'+str(i)+'.ll','r')
-	for line in region1:
-		counter_r1 += 1 
-		ir_r1.append(line)
-		if "define" in line:
-			entry_r1 = counter_r1
-		elif "ret" in line:
-			return_r1 = counter_r1
-	region1.close()
-	for j in range(1, execution_path_r2+1):
-		ir_r2 = []
-		counter_r2 = 0
-		region2 = open('exe_IR/exe_r2_path'+str(j)+'.ll','r')
-		for line in region2:
-			counter_r2 += 1
-			ir_r2.append(line)
-			if "define" in line:
-				entry_r2 = counter_r2
-			elif "ret" in line:
-                        	return_r2 = counter_r2
-		region2.close()
-		region_combination += 1
-		sequential = open('concurrent_program'+str(region_combination)+'.ll','a')
-		sequential.write("region1: \n")
-		for k in range(entry_r1, return_r1-1):
-			sequential.write(ir_r1[k])
-		sequential.write("region2: \n")
-		for k in range(entry_r2, return_r2-1):
-			sequential.write(ir_r2[k])
-		sequential.close()
-		os.system('mv concurrent_program'+str(region_combination)+'.ll exe_concurrent/')	
-"""
