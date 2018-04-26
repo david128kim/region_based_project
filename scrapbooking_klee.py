@@ -84,7 +84,7 @@ for k in range(0, len(source_r)):
         klee.write(source_r[k])
         whole.write(source_r[k])
 klee.write('return '+shared_data+'; }\n')
-whole.write('printf('+shared_data+'); \n')
+whole.write('printf("%d", '+shared_data+'); \n')
 whole.write('return '+shared_data+'; }\n')
 klee.close()
 whole.close()

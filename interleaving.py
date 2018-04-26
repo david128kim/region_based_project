@@ -1,12 +1,12 @@
 import os
-#import commands
 import subprocess
 import string
 import itertools
 import time
 from app_r1 import execution_path_r1
 from app_r2 import execution_path_r2
-import scrapbooking_source
+#import scrapbooking_source
+import scrapbooking_klee
 
 interleaving, a, b, temp, old_order = [], [], [], [], ()
 combination = {}
@@ -22,12 +22,10 @@ constraints = [[1, 2], [3, 4], [5, 6]]
 recording, filetest, a_tie, b_tie = [] ,[], [], []
 counter, path_amount, file_length, temp_exe_result = 0, 0, 0, 0
 
-for k in range(1, scrapbooking_source.region_combination+1):
+for k in range(1, 2):
         #testcase = open('testcase'+str(k)+'.ll','w')
         testcase = open('testcase.ll','w')
-        file = open('exe_concurrent/concurrent_program'+str(k)+'.ll')
-
-
+        file = open('exe_concurrent/concurrent_program.ll')
 #def extract_t1():
         counter_t1, t1_insert_number, a_tie, a = 0, 0, [], []
         insert_temp = 0
@@ -120,56 +118,38 @@ for k in range(1, scrapbooking_source.region_combination+1):
 	
         path_amount = file_length/(len(a)+len(b)-t1_insert_number-t2_insert_number)
         print ("total path amount: ", file_length/(len(a)+len(b)-t1_insert_number-t2_insert_number))
-
-        while(counter < file_length):
-                generating = open('answer.ll', 'w')
-                for i in range(0,len(a)+len(b)-t1_insert_number-t2_insert_number):
-                        recording.append(temp.pop())
-                        counter += 1
-                if counter == (len(a)+len(b)-t1_insert_number-t2_insert_number):
-                        counter = 0
-		
-                for i in range(len(a)+len(b)-t1_insert_number-t2_insert_number-1, -1, -1):
-                        generating.write(recording[i])
-                generating.close()
-                os.system('python scrapbooking_IR.py')
-                """
-                os.system('llvm-as answer_ok.ll -o answer_ok.bc')
-                os.chdir('/home/klee/')
-                os.system('cp region_based/answer_ok.bc .')
-                os.system('klee --libc=uclibc --posix-runtime answer_ok.bc')
-                os.system('klee answer_ok.bc')
-                os.system('ktest-tool --write-ints klee-last/test000001.ktest')
-                os.system('export LD_LIBRARY_PATH=klee_build/klee/Release+Asserts/lib/:$LD_LIBRARY_PATH')
-                os.system('cp region_based/answer_ok.ll .')
-                os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
-                os.system('gcc -L klee_build/klee/Release+Asserts/lib/ -o answer_ok answer_ok.s -lpthread -lkleeRuntest')
-                os.system('KTEST_FILE=klee-last/test000001.ktest ./answer_ok')
-                exe_result = subprocess.getoutput('echo $?')
-                print ("result: ", exe_result)
-		"""
-		#os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
-        	#os.system('gcc -o answer_ok answer_ok.s -lpthread')
-        	#os.system('./answer_ok')
-		#exe_result = commands.getoutput('./answer_ok')
+####################################################################################################
+for i in range(1, len(scrapbooking_klee.ValidInputs)+1):
+	while(counter < file_length):
+		generating = open('answer.ll', 'w')
+		for i in range(0,len(a)+len(b)-t1_insert_number-t2_insert_number):
+			recording.append(temp.pop())
+			counter += 1
+		if counter == (len(a)+len(b)-t1_insert_number-t2_insert_number):
+			counter = 0
+		for i in range(len(a)+len(b)-t1_insert_number-t2_insert_number-1, -1, -1):
+			generating.write(recording[i])
+		#generating.write('  %4 = sext i32 %3 to i64 \n  %5 = inttoptr i64 %4 to i8* \n')
+		#generating.write('  %6 = tail call i32 (i8*, ...)* @printf(i8* %5) #2 \n')
+		#generating.write('  %7 = load i32* @Global, align 4, !tbaa !1 \n')
+		generating.write('  %4 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([3 x i8]* @.str, i64 0, i64 0), i32 %3) #2 \n  %5 = load i32* @Global, align 4, !tbaa !1 \n')
+		generating.close()
+		os.system('python scrapbooking_IR.py')
+		os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
+		os.system('gcc -o answer_ok answer_ok.s -lpthread')
+		#os.system('./answer_ok')
+		exe_result = subprocess.getoutput('./answer_ok \n')
 		#temp_result = exe_result
-                
-                if (flag > 1) and (temp_result != exe_result):
-                        print ("We find a bug!")
-                        break
-                else:
-                        temp_result = exe_result
-		
-		#if "failed" in exe_result:
-			#break
-
-                #os.system('rm -r klee-last && rm -r klee-out* && rm answer*')
-                os.chdir('/home/klee/region_based')
-                #os.system('rm answer*')
-
-                flag += 1
-                recording = []
-                file_length -= (len(a)+len(b)-t1_insert_number-t2_insert_number)
-                print ("verifying path",flag-1)
-	#os.system('mv testcase'+str(k)+'.ll testcase_set/')
-        os.system('rm testcase.ll')	
+		if (flag > 1) and (temp_result != exe_result):
+			print ("now: ", exe_result)
+			print ("We find a bug!")
+			break
+		else:
+			temp_result = exe_result
+			print ("last: ", temp_result)
+		#os.system('rm -r klee-last && rm -r klee-out-* && rm answer*')
+		flag += 1
+		recording = []
+		file_length -= (len(a)+len(b)-t1_insert_number-t2_insert_number)
+		print ("verifying path",flag-1)
+	os.system('rm testcase.ll')	

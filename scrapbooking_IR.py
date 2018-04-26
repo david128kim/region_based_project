@@ -1,5 +1,4 @@
 import os
-#import commands
 import subprocess
 import string
 
@@ -20,7 +19,7 @@ file = open('whole_program.ll')
 scrap = open('answer_ok.ll','w')
 scrapping = []
 for line in file:
-	if "symbolic" in line:
+	if "define" in line:
 		scrapping.append(line)
 		break
 	else:
@@ -92,6 +91,17 @@ for line in file:
 		temp_1 = temp.split()
 		load_number = str(temp_1[0])
 		temp = temp.replace(str(load_number), "%"+str(counter_ins))
+		load_number = str(temp_1[2])
+		if "%" not in load_number:
+			i = 3
+			while ("%" not in load_number) and (i < len(temp_1)-1) :
+				load_number = str(temp_1[i])
+				if "%" in load_number:
+					temp = temp.replace(str(load_number), str(operation_name)+')')
+					break
+				i += 1
+		else:
+			temp = temp.replace(str(load_number), str(operation_name))
 		instruction.pop()
 		instruction.append(temp)
 		#if counter_call > 0:
@@ -122,8 +132,12 @@ for line in file:
 				load_number = str(temp_1[i])
 				if "%" in load_number:
 					#print "load_number", load_number
-					temp = temp.replace(str(load_number), "%"+str(counter_ins-1)+",")
-					break
+					if "sext" in line or "inttoptr" in line:
+						temp = temp.replace(str(load_number), "%"+str(counter_ins-1))
+						break
+					else:
+						temp = temp.replace(str(load_number), "%"+str(counter_ins-1)+",")
+						break
 				i += 1
 		else:
 			temp = temp.replace(str(load_number), "%"+str(counter_ins-1)+",")
