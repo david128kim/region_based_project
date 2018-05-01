@@ -121,34 +121,37 @@ for line in file:
 		counter_ins += 1
 		counter_operation += 1
 		instruction.append(line)
-		temp = line
-		temp_1 = temp.split()
-		load_number = str(temp_1[0])
-		temp = temp.replace(str(load_number), "%"+str(counter_ins))
-		load_number = str(temp_1[1])
-		if "%" not in load_number:
-			i = 1
-			while (("%" not in load_number) and ("mutex" not in load_number) and i < len(temp_1)):
-				load_number = str(temp_1[i])
-				if "%" in load_number:
-					#print "load_number", load_number
-					if "sext" in line or "inttoptr" in line:
-						temp = temp.replace(str(load_number), "%"+str(counter_ins-1))
-						break
-					else:
-						temp = temp.replace(str(load_number), "%"+str(counter_ins-1)+",")
-						break
-				i += 1
+		if "=" not in line and "%" not in line:
+			continue	
 		else:
-			temp = temp.replace(str(load_number), "%"+str(counter_ins-1)+",")
-		#temp = temp.replace(str(load_number), "%"+str(counter_load)+",")
-		#temp = line
-		temp_1 = temp.split()
-		operation_name = str(temp_1[0])
-		#print (operation_name)
-		instruction.pop()
-		instruction.append(temp)
-		temp = ""
+			temp = line
+			temp_1 = temp.split()
+			load_number = str(temp_1[0])
+			temp = temp.replace(str(load_number), "%"+str(counter_ins))
+			load_number = str(temp_1[1])
+			if "%" not in load_number:
+				i = 1
+				while (("%" not in load_number) and ("mutex" not in load_number) and i < len(temp_1)):
+					load_number = str(temp_1[i])
+					if "%" in load_number:
+						#print "load_number", load_number
+						if "sext" in line or "inttoptr" in line:
+							temp = temp.replace(str(load_number), "%"+str(counter_ins-1))
+							break
+						else:
+							temp = temp.replace(str(load_number), "%"+str(counter_ins-1)+",")
+							break
+					i += 1
+			else:
+				temp = temp.replace(str(load_number), "%"+str(counter_ins-1)+",")
+			#temp = temp.replace(str(load_number), "%"+str(counter_load)+",")
+			#temp = line
+			temp_1 = temp.split()
+			operation_name = str(temp_1[0])
+			#print (operation_name)
+			instruction.pop()
+			instruction.append(temp)
+			temp = ""
 		# 20180327
 		#if counter_operation >= 2:
 			#temp = line
@@ -219,8 +222,8 @@ file = open('whole_program.ll')
 for line in file:
 	counter += 1
 		
-	cut = len(temp_2)	 							#before 20171121
-		
+cut = len(temp_2)	 							#before 20171121
+'''		
 	if ("cmp" in line) and ("br" not in line):	# not good
 		temp_cut = counter
 		temp = line
@@ -236,6 +239,7 @@ for line in file:
 if (temp_cut < cut) and (temp_cut != 0):
 	cut = temp_cut
 scrapbooking.write(temp)
+'''
 for i in range(cut, counter):	# include cmp ( before conv )
 	scrapbooking.write(ending[i])
 
