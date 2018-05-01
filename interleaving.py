@@ -34,16 +34,19 @@ for k in range(1, 2):
                         a.append(line)
                         counter_t1 += 1
                         if (("load" in line) or ("store" in line) or ("mutex" in line) or ("signal" in line)):
-                                a.insert(counter_t1+insert_temp, "tie")
+                                a.insert(counter_t1+t1_insert_number, "tie")
                                 insert_temp += 1
                                 t1_insert_number += 1
-	
+                                end_tie = counter_t1+t1_insert_number	
                 elif "region2" in line:
                        break
+        del a[end_tie-1]
+        t1_insert_number -= 1
         print ("a: ", a)
         a_tie = " ".join(a)
         a_tie = a_tie.split('tie')
-        a_tie.pop()	
+        if a_tie[len(a_tie)-1] == "":
+                a_tie.pop()	
         print ("a_tie: ", a_tie)
         print ("a_tie_length: ", len(a_tie))
 
@@ -54,18 +57,18 @@ for k in range(1, 2):
                 b.append(line)
                 counter_t2 += 1
                 if (("load" in line) or ("store" in line)) or ("mutex" in line) or ("signal" in line):
-                        b.insert(counter_t2+insert_temp, "tie")
+                        b.insert(counter_t2+t2_insert_number, "tie")
                         insert_temp += 1
                         t2_insert_number += 1
-			#print strthread2
-			#print b
-                elif "main" in line:
-                        break
-	
+                        end_tie = counter_t2+t2_insert_number
+        del b[end_tie-1]
+        t2_insert_number -= 1
+        #b.insert(len(b), "tie")
         print ("b: ", b)
         b_tie = " ".join(b)
         b_tie = b_tie.split('tie')
-        b_tie.pop()
+        if b_tie[len(b_tie)-1] == "":
+                b_tie.pop()
         print ("b_tie: ", b_tie)
         print ("b_tie length: ", len(b_tie))
 
@@ -100,6 +103,7 @@ for k in range(1, 2):
                 iters = [iter(group) for group in interleaving]
                 for i in new_order:
                         test = next(iters[i])
+                        #print (test)
                         testcase.write(test)
         file.close()
         testcase.close()
@@ -111,11 +115,12 @@ for k in range(1, 2):
         for line in file:
                  temp.append(line)
 	#print temp
-        temp.pop()
-	#print "temp_length: ", len(temp)
+        #temp.pop()
+        print ("temp_length: ", len(temp))
         file_length =  len(temp)
         file.close()
-	
+        print ("a_l, b_l: ", len(a), len(b))
+        print ("t1_i, t2_i: ", t1_insert_number, t2_insert_number)	
         path_amount = file_length/(len(a)+len(b)-t1_insert_number-t2_insert_number)
         print ("total path amount: ", file_length/(len(a)+len(b)-t1_insert_number-t2_insert_number))
 ####################################################################################################
@@ -152,4 +157,4 @@ for i in range(1, len(scrapbooking_klee.ValidInputs)+1):
 		recording = []
 		file_length -= (len(a)+len(b)-t1_insert_number-t2_insert_number)
 		print ("verifying path",flag-1)
-	os.system('rm testcase.ll')	
+	#os.system('rm testcase.ll')	
