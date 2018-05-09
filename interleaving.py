@@ -5,8 +5,8 @@ import itertools
 import time
 from app_r1 import execution_path_r1
 from app_r2 import execution_path_r2
-#import scrapbooking_source
-import scrapbooking_klee
+import scrapbooking_source
+#import scrapbooking_klee
 
 interleaving, a, b, temp, old_order = [], [], [], [], ()
 combination = {}
@@ -124,7 +124,8 @@ for k in range(1, 2):
         path_amount = file_length/(len(a)+len(b)-t1_insert_number-t2_insert_number)
         print ("total path amount: ", file_length/(len(a)+len(b)-t1_insert_number-t2_insert_number))
 ####################################################################################################
-for i in range(1, len(scrapbooking_klee.ValidInputs)+1):
+#for i in range(1, len(scrapbooking_klee.ValidInputs)+1):
+for i in range(1, 2):
 	while(counter < file_length):
 		generating = open('answer.ll', 'w')
 		for i in range(0,len(a)+len(b)-t1_insert_number-t2_insert_number):
