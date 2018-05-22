@@ -13,8 +13,8 @@ tree = Tree()
 file = open("region_text/branch.txt")
 treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r1, counter_bp = 0, 0, 0, 0, 0, 0, 0
 info, node_height, brackets_match_record, branch_point, branch_point_record, branch_leaf, breakpoint, dfs, dfs_temp = [], [], [], [], [], [], [], [], []
-start, end, counter_r2, r2_flag, main_flag, temp_node_length= 1, 0, 0, 0, 0, 0
-constrain, constrain_state, path_cond, c_num, p_num = "", [], [], [], []
+start, end, counter_r2, r2_flag, main_flag, temp_node_length, temp_dfs, temp_pop = 1, 0, 0, 0, 0, 0, 0, 0
+constrain, constrain_state, path_cond, c_num, p_num, path, p_num_stat = "", [], [], [], [], [], []
 
 def extract_branch(a,b):
 	a = b.replace("if", "")
@@ -49,10 +49,10 @@ for i  in range(1, len(info)):
 			tree.add_node(info[i], info[temp])
 			c_num.append(i)
 			p_num.append(temp)
-			print ("if: child, parents: ", (i, temp))
+			#print ("if: child, parents: ", (i, temp))
 		else:
 			tree.add_node(info[i], info[treeID])
-			print ("if: child, parents: ", (i, treeID))
+			#print ("if: child, parents: ", (i, treeID))
 			c_num.append(i)
 			p_num.append(treeID)
 		constrain = info[i].replace("if", "")
@@ -85,7 +85,7 @@ for i  in range(1, len(info)):
 		height = brackets_match
 		temp = branch_point[brackets_match-1]
 		tree.add_node(info[i], info[temp])
-		print ("elif: child, parents: ", (i, temp))
+		#print ("elif: child, parents: ", (i, temp))
 		c_num.append(i)
 		p_num.append(temp)
 		node_height.append(height)
@@ -100,7 +100,7 @@ for i  in range(1, len(info)):
 		height = brackets_match
 		temp = branch_point[brackets_match-1]
 		tree.add_node(info[i], info[temp])
-		print ("else: child, parents: ", (i, temp))
+		#print ("else: child, parents: ", (i, temp))
 		c_num.append(i)
 		p_num.append(temp)
 		node_height.append(height)
@@ -122,7 +122,7 @@ for i  in range(1, len(info)):
 			height += 1
 			#print height
 			tree.add_node(info[i], info[treeID])
-			print ("others: child, parents: ", (i, treeID))
+			#print ("others: child, parents: ", (i, treeID))
 			c_num.append(i)
 			p_num.append(treeID)
 			node_height.append(height)
@@ -141,7 +141,6 @@ for i  in range(1, len(info)):
 	#print "b-m: ", brackets_match
 	#print "info[i]: ", info[i]
 	treeID += 1
-
 if branch_boundrary > 0:
 	for i in range(0, 1):
 		counter = 0
@@ -159,42 +158,103 @@ if branch_boundrary > 0:
 
 tree.display(info[0])
 
-print ("parents: \n", p_num)
-print ("child: \n", c_num)
-
+#print ("parents: \n", p_num)
+#print ("child: \n", c_num)
+#print (len(info))
 #print("***** DEPTH-FIRST ITERATION *****"), '\n'
 print ("region1: ")
 for node in tree.traverse(info[0]):							#  calculate path amount
 	if "region" not in node:
 		dfs.append(node)
+		"""
 		if node == info[len(info)-1]: 
 			partition = open("partition.c", "w")
 			execution_path_r1 += 1
-			array_site = 0
 			for i in range(1, len(dfs)):
-				array_site += 1
-				if ("if" not in dfs[i]) and ("elif" not in dfs[i]) and ("else" not in dfs[i]) and ("}" not in dfs[i]):
-					partition.write(dfs[i])
+				#if ("if" not in dfs[i]) and ("elif" not in dfs[i]) and ("else" not in dfs[i]) and ("}" not in dfs[i]):
+				partition.write(dfs[i])
+				if "}" in dfs[i]:
+					r_bracket.append(i)
 			partition.close()
 			os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
 			#os.system('clang -Os -S -emit-llvm exe_r1_path'+str(execution_path_r1)+'.c -o exe_r1_path'+str(execution_path_r1)+'.ll')
-			"""
-			brackets_match = 0
-			for i in range(len(dfs)-1, -1, -1):
-				if "{" in dfs[i]:
-					brackets_match += 1
-				if ("if" in dfs[i]) and ("elif" in dfs[i]) and ("else" in dfs[i]) or brackets_match < 1:
-					dfs.pop()
-			"""
-			dfs.pop()
-			print ("length of dfs: ", len(dfs))
-			print ("dfs: ", dfs)
 			
-			"""
-			for i in range(len(dfs)-1, -1, -1):
-				if p_num[len(dfs)-1] >= p_num[i]:
-						dfs.pop()
-				elif ("if" in dfs[i]) and ("elif" in dfs[i]) and ("else" in dfs[i]) and ("}" in dfs[i]):
-						dfs.pop()
-			"""
+			#for i in range(len(dfs)-1, -1, -1):
+				#if ("if" in dfs[i]) and ("elif" in dfs[i]) and ("else" in dfs[i]):
+					#dfs.pop()
 
+			#dfs.pop()
+			#print ("length of dfs: ", len(dfs))
+			print ("}'s location: ", r_bracket)
+			if temp_dfs >= len(info)-1:
+				break
+			else:
+				temp_dfs = len(dfs)
+				for j in range(len(dfs)-1, 0, -1):
+					if p_num[temp_dfs] <= p_num[j]:
+						dfs.pop()
+					else:
+						break
+			print ("dfs: ", dfs)
+		"""
+#print ("dfs: ", dfs)
+for i in range(0, len(p_num)-1):
+	if (p_num[i+1] < p_num[i]) and ("}" in dfs[i+1]):
+		p_num.insert(i+1, 99)
+p_num_stat = p_num
+print (p_num_stat)
+#print ("parents: \n", p_num)
+for i in range(0, len(p_num)-1):
+	path.append(dfs[i])
+	if ("}" in dfs[i]) and ("}" not in dfs[i+1]):
+		#print (dfs[i+1])
+		partition = open("partition.c", "w")
+		execution_path_r1 += 1
+		for i in range(0, len(path)):
+			#if ("if" not in dfs[i]) and ("elif" not in dfs[i]) and ("else" not in dfs[i]) and ("}" not in dfs[i]):
+			partition.write(path[i])
+		partition.close()
+		os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
+		#temp_path = len(p_num)
+		#temp_path = len(path) + temp_pop
+		temp_pop = 0
+		temp_path = len(path)
+		print ("path length: ", temp_path)
+		print ("len(path): ", len(path))
+		print ("path: ", path)
+		for j in range(len(path)-1, -1, -1):
+			if (p_num[temp_path] <= p_num[j]):
+				print ("(p_num[temp_path], p_num[j]): ", (p_num[temp_path], p_num[j]))
+				path.pop()
+				temp_pop += 1
+				temp_del = j
+				#del p_num[j]
+				#p_num.pop()
+				#print ("(p_num[temp_path], p_num_stat[j]): ", (p_num[temp_path], p_num_stat[j]))
+			#elif "}" in path[j]:
+				#path.pop()
+				#temp_pop += 1
+		
+			else: 
+				break
+		for k in range(0, temp_pop):
+			del p_num[temp_del]
+		print ("after del p_num: ", p_num)
+		#print ("after del p_num_stat: ", p_num_stat)
+		print ("after path.pop(): ", path)
+
+partition = open("partition.c", "w")
+execution_path_r1 += 1
+for i in range(0, len(path)):
+	partition.write(path[i])
+partition.write("}\n")
+partition.close()
+os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
+	
+	
+
+
+
+
+
+	
