@@ -162,48 +162,17 @@ tree.display(info[0])
 #print ("child: \n", c_num)
 #print (len(info))
 #print("***** DEPTH-FIRST ITERATION *****"), '\n'
-print ("region1: ")
+#print ("region1: ")
 for node in tree.traverse(info[0]):							#  calculate path amount
 	if "region" not in node:
 		dfs.append(node)
-		"""
-		if node == info[len(info)-1]: 
-			partition = open("partition.c", "w")
-			execution_path_r1 += 1
-			for i in range(1, len(dfs)):
-				#if ("if" not in dfs[i]) and ("elif" not in dfs[i]) and ("else" not in dfs[i]) and ("}" not in dfs[i]):
-				partition.write(dfs[i])
-				if "}" in dfs[i]:
-					r_bracket.append(i)
-			partition.close()
-			os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
-			#os.system('clang -Os -S -emit-llvm exe_r1_path'+str(execution_path_r1)+'.c -o exe_r1_path'+str(execution_path_r1)+'.ll')
-			
-			#for i in range(len(dfs)-1, -1, -1):
-				#if ("if" in dfs[i]) and ("elif" in dfs[i]) and ("else" in dfs[i]):
-					#dfs.pop()
-
-			#dfs.pop()
-			#print ("length of dfs: ", len(dfs))
-			print ("}'s location: ", r_bracket)
-			if temp_dfs >= len(info)-1:
-				break
-			else:
-				temp_dfs = len(dfs)
-				for j in range(len(dfs)-1, 0, -1):
-					if p_num[temp_dfs] <= p_num[j]:
-						dfs.pop()
-					else:
-						break
-			print ("dfs: ", dfs)
-		"""
 #print ("dfs: ", dfs)
 for i in range(0, len(p_num)-1):
 	if (p_num[i+1] < p_num[i]) and ("}" in dfs[i+1]):
 		p_num.insert(i+1, 99)
 p_num_stat = p_num
-print (p_num_stat)
-#print ("parents: \n", p_num)
+#print (p_num_stat)
+print ("parents: \n", p_num)
 for i in range(0, len(p_num)-1):
 	path.append(dfs[i])
 	if ("}" in dfs[i]) and ("}" not in dfs[i+1]):
@@ -219,12 +188,12 @@ for i in range(0, len(p_num)-1):
 		#temp_path = len(path) + temp_pop
 		temp_pop = 0
 		temp_path = len(path)
-		print ("path length: ", temp_path)
-		print ("len(path): ", len(path))
-		print ("path: ", path)
+		#print ("path length: ", temp_path)
+		#print ("len(path): ", len(path))
+		#print ("path: ", path)
 		for j in range(len(path)-1, -1, -1):
 			if (p_num[temp_path] <= p_num[j]):
-				print ("(p_num[temp_path], p_num[j]): ", (p_num[temp_path], p_num[j]))
+				#print ("(p_num[temp_path], p_num[j]): ", (p_num[temp_path], p_num[j]))
 				path.pop()
 				temp_pop += 1
 				temp_del = j
@@ -241,7 +210,7 @@ for i in range(0, len(p_num)-1):
 			del p_num[temp_del]
 		print ("after del p_num: ", p_num)
 		#print ("after del p_num_stat: ", p_num_stat)
-		print ("after path.pop(): ", path)
+		#print ("after path.pop(): ", path)
 
 partition = open("partition.c", "w")
 execution_path_r1 += 1
