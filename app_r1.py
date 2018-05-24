@@ -14,15 +14,15 @@ file = open("region_text/branch.txt")
 treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r1, counter_bp = 0, 0, 0, 0, 0, 0, 0
 info, node_height, brackets_match_record, branch_point, branch_point_record, branch_leaf, breakpoint, dfs, dfs_temp = [], [], [], [], [], [], [], [], []
 start, end, counter_r2, r2_flag, main_flag, temp_node_length, temp_dfs, temp_pop = 1, 0, 0, 0, 0, 0, 0, 0
-constrain, constrain_state, path_cond, c_num, p_num, path, p_num_stat = "", [], [], [], [], [], []
+constrain, constrain_state, path_cond_state, path_cond, c_num, p_num, path, cond_list, cond_dfs, cond_final_list = "", [], [], [], [], [], [], [], [], []
 
 def extract_branch(a,b):
 	a = b.replace("if", "")
 	a = a.replace("(", "", 1)
 	a = a.replace(")", "", 1)
 	a = a.replace("{", "")
-	print ("a :", a)
-	print ("b :", b)
+	#print ("a :", a)
+	#print ("b :", b)
 	return a
 	return b
 
@@ -49,16 +49,27 @@ for i  in range(1, len(info)):
 			tree.add_node(info[i], info[temp])
 			c_num.append(i)
 			p_num.append(temp)
+			cond_list.append(temp)
+			cond_final_list.append(temp)
 			#print ("if: child, parents: ", (i, temp))
 		else:
 			tree.add_node(info[i], info[treeID])
 			#print ("if: child, parents: ", (i, treeID))
 			c_num.append(i)
 			p_num.append(treeID)
+			cond_list.append(treeID)
+			cond_final_list.append(treeID)
+		
 		constrain = info[i].replace("if", "")
 		constrain = constrain.replace("(", "", 1)
 		constrain = constrain.replace(")", "", 1)
 		constrain = constrain.replace("{", "")
+		constrain_state.append(constrain)
+		path_cond_state.append(constrain)
+		
+		#extract_branch(constrain, info[i])
+		#print ("constrain: ", constrain)
+
 		"""
 		if (len(brackets_match_record) > 1) and (brackets_match_record[len(brackets_match_record)-2] < brackets_match_record[len(brackets_match_record)-1]):
 			constrain_state.append(constrain)
@@ -69,10 +80,6 @@ for i  in range(1, len(info)):
 		else:
 			constrain_state.append(constrain)
 		
-		#constrain = extract_branch
-		#extract_branch(constrain, info[i])
-		
-		print ("brackets_match: \n", brackets_match)
 		print ("extract and combine: \n", constrain)
 		print ("state:(if) \n", constrain_state)
 		#print ("path condition: \n", path_cond)
@@ -86,8 +93,20 @@ for i  in range(1, len(info)):
 		temp = branch_point[brackets_match-1]
 		tree.add_node(info[i], info[temp])
 		#print ("elif: child, parents: ", (i, temp))
+
 		c_num.append(i)
 		p_num.append(temp)
+		cond_list.append(temp)
+		cond_final_list.append(temp)
+
+		constrain = info[i].replace("else if", "")
+		constrain = constrain.replace("(", "", 1)
+		constrain = constrain.replace(")", "", 1)
+		constrain = constrain.replace("{", "")
+		constrain_state.append("null")
+		path_cond_state.append(constrain)
+		#print ("constrain: ", constrain)
+
 		node_height.append(height)
 		temp_node_length = len(node_height)
 
@@ -101,15 +120,20 @@ for i  in range(1, len(info)):
 		temp = branch_point[brackets_match-1]
 		tree.add_node(info[i], info[temp])
 		#print ("else: child, parents: ", (i, temp))
+
 		c_num.append(i)
 		p_num.append(temp)
+		cond_list.append(temp)
+		cond_final_list.append(temp)
+
+		constrain_state.append("null")
+		constrain = " !(" + constrain_state[temp] + ") "
+		path_cond_state.append(constrain)
+
 		node_height.append(height)
 		temp_node_length = len(node_height)
-                #if (node_height[temp_node_length-1] < node_height[temp_node_length-2]):
-			#branch_leaf.append(i-1)
+
 		"""
-		print ("brackets_match:(else) \n", brackets_match)
-			
 		constrain = "! (" + constrain_state[len(constrain_state)-1] + ") && " + constrain_state[len(constrain_state)-2]			
 		constrain_state.append(constrain)
 		"""
@@ -125,6 +149,9 @@ for i  in range(1, len(info)):
 			#print ("others: child, parents: ", (i, treeID))
 			c_num.append(i)
 			p_num.append(treeID)
+			#cond_list.append(treeID)
+			constrain_state.append("null")
+
 			node_height.append(height)
 
 		if("}" in info[i]):
@@ -132,15 +159,41 @@ for i  in range(1, len(info)):
 			brackets_match -= 1			
 			if brackets_match == 0:
 				branch_leaf.append(i)
-				"""
-				constrain = constrain_state.pop()
-				path_cond.append(constrain)
-				print ("path condition: \n", path_cond)
-				print ("state:(leaf) \n", constrain_state)
-				"""
-	#print "b-m: ", brackets_match
-	#print "info[i]: ", info[i]
 	treeID += 1
+print ("original cond_list: ", cond_list)
+print ("constrain_state: ", constrain_state)
+print ("path_cond_state: ", path_cond_state)
+temp = len(cond_list)
+for i in range(0, temp-1):
+	cond_dfs.append(path_cond_state[i])
+	if (cond_final_list[i+1] <= cond_final_list[i]):
+		#print ("temp_cond_list: ", cond_final_list)
+		#print ("(i, temp_cond_list[i]): ", (i, cond_final_list[i]))	
+		constrain = "1"
+		for j in range(0, len(cond_dfs)):
+			constrain = constrain + " && " + path_cond_state[j]
+		path_cond.append(constrain)
+		temp_state_pop = 0
+		temp_cond_dfs_length = len(cond_dfs)
+		for k in range(len(cond_dfs)-1, -1, -1):
+			if cond_list[temp_cond_dfs_length] <= cond_list[k]:	
+				cond_dfs.pop()
+				temp_state_pop += 1
+				temp_del = k
+			else:
+				break
+		print (temp_state_pop)
+		for l in range(0, temp_state_pop):
+			#del path_cond_state[temp_del]
+			del cond_list[temp_del]
+		print ("cond_list state: ", cond_list)
+#print ("path_cond: ", path_cond)
+constrain = "1"
+for i in range(0, len(cond_dfs)):
+	constrain = constrain + " && " + path_cond_state[i]
+path_cond.append(constrain)
+print ("path_cond: ", path_cond)
+
 if branch_boundrary > 0:
 	for i in range(0, 1):
 		counter = 0
@@ -155,24 +208,19 @@ if branch_boundrary > 0:
 				#print "j, j-1: ", (j, j-1)
 			counter += 1
 
-
 tree.display(info[0])
 
-#print ("parents: \n", p_num)
-#print ("child: \n", c_num)
-#print (len(info))
 #print("***** DEPTH-FIRST ITERATION *****"), '\n'
-#print ("region1: ")
 for node in tree.traverse(info[0]):							#  calculate path amount
 	if "region" not in node:
 		dfs.append(node)
-#print ("dfs: ", dfs)
+
 for i in range(0, len(p_num)-1):
 	if (p_num[i+1] < p_num[i]) and ("}" in dfs[i+1]):
 		p_num.insert(i+1, 99)
-p_num_stat = p_num
-#print (p_num_stat)
+
 print ("parents: \n", p_num)
+
 for i in range(0, len(p_num)-1):
 	path.append(dfs[i])
 	if ("}" in dfs[i]) and ("}" not in dfs[i+1]):
@@ -184,26 +232,15 @@ for i in range(0, len(p_num)-1):
 			partition.write(path[i])
 		partition.close()
 		os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
-		#temp_path = len(p_num)
-		#temp_path = len(path) + temp_pop
 		temp_pop = 0
 		temp_path = len(path)
-		#print ("path length: ", temp_path)
-		#print ("len(path): ", len(path))
-		#print ("path: ", path)
 		for j in range(len(path)-1, -1, -1):
 			if (p_num[temp_path] <= p_num[j]):
 				#print ("(p_num[temp_path], p_num[j]): ", (p_num[temp_path], p_num[j]))
 				path.pop()
 				temp_pop += 1
 				temp_del = j
-				#del p_num[j]
-				#p_num.pop()
 				#print ("(p_num[temp_path], p_num_stat[j]): ", (p_num[temp_path], p_num_stat[j]))
-			#elif "}" in path[j]:
-				#path.pop()
-				#temp_pop += 1
-		
 			else: 
 				break
 		for k in range(0, temp_pop):
