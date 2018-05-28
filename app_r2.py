@@ -1,11 +1,7 @@
 import os
-#import commands
 import subprocess
 import string
 #from app_r1 import temp_name
-#reload(app_r1)
-#print temp_name
-#print app_r1.program_name
 from tree import Tree
 from app_r1 import execution_path_r1
 
@@ -13,12 +9,12 @@ from app_r1 import execution_path_r1
 
 tree = Tree()
 
-#file = open("select_region1.c")
 file = open("region_text/branch.txt")
 treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r2, counter_bp = 0, 0, 0, 0, 0, 0, 0
 info, info_bottom, brackets_match_record, branch_point, branch_leaf, breakpoint, dfs = [], [], [], [], [], [], []
 start, end, counter_r2, r2_flag, main_flag, temp_pop = 1, 0, 0, 0, 0, 0
-p_num, path = [], []
+constrain, constrain_state, path_cond_state, path_cond, cond_text, p_num, path, cond_list, cond_dfs, cond_final_list = "", [], [], [], [], [], [], [], [], []
+
 for line in file:
 	counter_r2 += 1
 	if "region2" in line:
@@ -44,9 +40,22 @@ for i  in range(1, len(info)):
 			temp = branch_point[brackets_match-1]
 			tree.add_node(info[i], info[temp])
 			p_num.append(temp)
+			cond_list.append(temp)
+			cond_final_list.append(temp)
 		else: 
 			tree.add_node(info[i], info[treeID])
 			p_num.append(treeID)
+			cond_list.append(treeID)
+			cond_final_list.append(treeID)
+
+		constrain = info[i].replace("if", "")
+		constrain = constrain.replace("(", "", 1)
+		constrain = constrain.replace(")", "", 1)
+		constrain = constrain.replace("{", "")
+		constrain_state.append(constrain)
+		path_cond_state.append(constrain)
+		cond_text.append(constrain)
+
 	
 	elif (("else" in info[i]) and ("if" in info[i])):
 		brackets_match += 1
@@ -56,6 +65,18 @@ for i  in range(1, len(info)):
 		temp = branch_point[brackets_match-1]
 		tree.add_node(info[i], info[temp])
 		p_num.append(temp)
+
+		cond_list.append(temp)
+		cond_final_list.append(temp)
+
+		constrain = info[i].replace("else if", "")
+		constrain = constrain.replace("(", "", 1)
+		constrain = constrain.replace(")", "", 1)
+		constrain = constrain.replace("{", "")
+		constrain_state.append("null")
+		path_cond_state.append(constrain)
+		cond_text.append(constrain)
+
 	elif (("else" in info[i]) and ("if" not in info[i])):
 		brackets_match += 1
 		brackets_match_record.append(brackets_match)                                        
@@ -64,6 +85,16 @@ for i  in range(1, len(info)):
 		temp = branch_point[brackets_match-1]
 		tree.add_node(info[i], info[temp])
 		p_num.append(temp)
+	
+		cond_list.append(temp)
+		cond_final_list.append(temp)
+
+		constrain_state.append("null")
+		constrain = " !(" + constrain_state[temp] + ") "
+		path_cond_state.append(constrain)
+		cond_text.append(constrain)
+		
+
 	else:	
 		if "end of branch" in info[i]:
 			branch_boundrary = i
@@ -71,6 +102,7 @@ for i  in range(1, len(info)):
 		else: 
 			tree.add_node(info[i], info[treeID])
 			p_num.append(treeID)
+			constrain_state.append("null")
 		if("}" in info[i]):
 		######## layer problem #########
 			brackets_match -= 1
@@ -78,6 +110,34 @@ for i  in range(1, len(info)):
 				#print i
 				branch_leaf.append(i)
 	treeID += 1
+
+temp = len(cond_list)
+for i in range(0, temp-1):
+	cond_dfs.append(cond_text[i])
+	if (cond_final_list[i+1] <= cond_final_list[i]):
+		constrain = "1"
+		for j in range(0, len(cond_dfs)):
+			constrain = constrain + " && " + path_cond_state[j]
+		path_cond.append(constrain)
+		temp_state_pop = 0
+		temp_cond_dfs_length = len(cond_dfs)
+		for k in range(len(cond_dfs)-1, -1, -1):
+			if cond_list[temp_cond_dfs_length] <= cond_list[k]:
+				cond_dfs.pop()
+				temp_state_pop += 1
+				temp_del = k
+			else:
+				break
+		for l in range(0, temp_state_pop):
+			del cond_list[temp_del]
+			del path_cond_state[temp_del]
+constrain = "1"
+for i in range(0, len(path_cond_state)):
+	constrain = constrain + " && " + path_cond_state[i]
+path_cond.append(constrain)
+print ("path_cond: ", path_cond)
+
+
 if branch_boundrary > 0:
 	for i in range(0, 1): 
 		counter = 0
