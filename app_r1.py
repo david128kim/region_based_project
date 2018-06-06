@@ -10,8 +10,8 @@ from tree import depth_list
 tree = Tree()
 
 file = open("region_text/branch.txt")
-treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r1, counter_bp = 0, 0, 0, 0, 0, 0, 0
-info, node_height, brackets_match_record, branch_point, branch_point_record, branch_leaf, breakpoint, dfs, dfs_temp = [], [], [], [], [], [], [], [], []
+treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r1, counter_bp, fork = 0, 0, 0, 0, 0, 0, 0, 0
+info, node_height, brackets_match_record, branch_point, branch_leaf, breakpoint, dfs, dfs_temp, cond_num = [], [], [], [], [], [], [], [], []
 start, end, counter_r2, r2_flag, main_flag, temp_node_length, temp_dfs, temp_pop = 1, 0, 0, 0, 0, 0, 0, 0
 constrain, constrain_state, path_cond_state, path_cond, cond_text, p_num, path, cond_list, cond_dfs, cond_final_list = "", [], [], [], [], [], [], [], [], []
 
@@ -34,25 +34,22 @@ tree.add_node(info[treeID])
 
 for i  in range(1, len(info)):
 	if (("if" in info[i]) and ("else" not in info[i])):
-		height += 1
-		counter_if += 1		
 		brackets_match += 1
+		cond_num.append(brackets_match)
 		brackets_match_record.append(brackets_match)
 		branch_point.append(treeID)
-		branch_point_record.append(treeID)
-		node_height.append(height)
-		if ("else" not in  info[i-1]):
+		if cond_num[len(cond_num)-1] == cond_num[len(cond_num)-2]:	################ same depth #################################
 			temp = branch_point[brackets_match-1]
 			tree.add_node(info[i], info[temp])
 			p_num.append(temp)
 			cond_list.append(temp)
 			cond_final_list.append(temp)
-		else:
+		else:								################ else/while/if/elif then "if" appear ################
 			tree.add_node(info[i], info[treeID])
 			p_num.append(treeID)
 			cond_list.append(treeID)
 			cond_final_list.append(treeID)
-		
+
 		constrain = info[i].replace("if", "")
 		constrain = constrain.replace("(", "", 1)
 		constrain = constrain.replace(")", "", 1)
@@ -63,10 +60,10 @@ for i  in range(1, len(info)):
 
 	elif ("else if" in info[i]):
 		brackets_match += 1
+		cond_num.append(brackets_match)
 		brackets_match_record.append(brackets_match)
 		if (brackets_match_record[len(brackets_match_record)-1] < brackets_match_record[len(brackets_match_record)-2]):
 			branch_point.pop()
-		height = brackets_match
 		temp = branch_point[brackets_match-1]
 		tree.add_node(info[i], info[temp])
 
@@ -82,16 +79,15 @@ for i  in range(1, len(info)):
 		path_cond_state.append(constrain)
 		cond_text.append(constrain)
 
-		node_height.append(height)
-		temp_node_length = len(node_height)
-
-
 	elif (("else" in info[i]) and ("if" not in info[i])):
 		brackets_match += 1
+		cond_num.append(brackets_match)
 		brackets_match_record.append(brackets_match)
+		
+		#fork = 0
+
 		if (brackets_match_record[len(brackets_match_record)-1] < brackets_match_record[len(brackets_match_record)-2]):
                         branch_point.pop()
-		height = brackets_match
 		temp = branch_point[brackets_match-1]
 		tree.add_node(info[i], info[temp])
 
@@ -103,21 +99,40 @@ for i  in range(1, len(info)):
 		constrain = " !(" + constrain_state[temp] + ") "
 		path_cond_state.append(constrain)
 		cond_text.append(constrain)
-
-		node_height.append(height)
-		temp_node_length = len(node_height)
+	
+	elif "while" in info[i]:
+		brackets_match += 1
+		cond_num.append(brackets_match)
+		brackets_match_record.append(brackets_match)
+		branch_point.append(treeID)
+		if cond_name[len(cond_name)-1] == cond_name[len(cond_name)-2]:
+			temp = branch_point[brackets_match-1]
+			tree.add_node(info[i], info[temp])
+			p_num.append(temp)
+			cond_list.append(temp)
+			cond_final_list.append(temp)
+		else:                                                           ################ else/while then "while" appear ################
+			tree.add_node(info[i], info[treeID])
+			p_num.append(treeID)
+			cond_list.append(treeID)
+			cond_final_list.append(treeID)
+		
+		constrain = info[i].replace("while", "")
+		constrain = constrain.replace("(", "", 1)
+		constrain = constrain.replace(")", "", 1)
+		constrain = constrain.replace("{", "")
+		constrain_state.append(constrain)
+		path_cond_state.append(constrain)
+		cond_text.append(constrain)
 
 	else:	
 		if "end of branch" in info[i]:
 			branch_boundrary = i
 			break
 		else: 
-			height += 1
 			tree.add_node(info[i], info[treeID])
 			p_num.append(treeID)
 			constrain_state.append("null")
-
-			node_height.append(height)
 
 		if("}" in info[i]):
 		######## layer problem #########
@@ -125,7 +140,6 @@ for i  in range(1, len(info)):
 			if brackets_match == 0:
 				branch_leaf.append(i)
 	treeID += 1
-
 temp = len(cond_list)
 for i in range(0, temp-1):
 	cond_dfs.append(cond_text[i])
@@ -179,7 +193,8 @@ for i in range(0, len(p_num)-1):
 
 for i in range(0, len(p_num)-1):
 	path.append(dfs[i])
-	if ("}" in dfs[i]) and ("}" not in dfs[i+1]):
+	if ("}" in dfs[i]) and ("}" not in dfs[i+1]) and ("else" in dfs[i+1]):
+	#if ("}" in dfs[i]) and ("}" not in dfs[i+1]) and ("else" in dfs[i+1]) and ("if" in dfs[i+1]) and ("while" in dfs[i+1]): 
 		partition = open("partition.c", "w")
 		execution_path_r1 += 1
 		for i in range(0, len(path)):
