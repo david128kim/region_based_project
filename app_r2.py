@@ -3,7 +3,7 @@ import subprocess
 import string
 #from app_r1 import temp_name
 from tree import Tree
-from app_r1 import execution_path_r1
+#from app_r1 import execution_path_r1
 
 (_ROOT, _DEPTH, _BREADTH) = range(3)
 
@@ -32,7 +32,7 @@ for i in range(main_flag-r2_flag, -1, -1):
 tree.add_node(info[treeID])
 for i  in range(1, len(info)):
 	if (("if" in info[i]) and ("else" not in info[i])):
-		counter_if += 1
+		#counter_if += 1
 		brackets_match += 1
 		brackets_match_record.append(brackets_match)
 		branch_point.append(treeID)
@@ -103,6 +103,7 @@ for i  in range(1, len(info)):
 			tree.add_node(info[i], info[treeID])
 			p_num.append(treeID)
 			constrain_state.append("null")
+		
 		if("}" in info[i]):
 		######## layer problem #########
 			brackets_match -= 1
@@ -110,7 +111,7 @@ for i  in range(1, len(info)):
 				#print i
 				branch_leaf.append(i)
 	treeID += 1
-
+#print (constrain_state)
 temp = len(cond_list)
 for i in range(0, temp-1):
 	cond_dfs.append(cond_text[i])
@@ -141,7 +142,7 @@ print ("path_cond: ", path_cond)
 if branch_boundrary > 0:
 	for i in range(0, 1): 
 		counter = 0
-		#print "i: ",  i
+		#print ("branch_boundrary, len(info): ",  branch_boundrary, len(info))
 		for j in range(branch_boundrary, len(info)):
 			temp = branch_leaf[i]
 			if counter == 0:
@@ -156,13 +157,16 @@ tree.display(info[0])
 for node in tree.traverse(info[0]):
 	if "region" not in node:
 		dfs.append(node)
+print (dfs)
 for i in range(0, len(p_num)-1):
 	if (p_num[i+1] < p_num[i]) and ("}" in dfs[i+1]):
 		p_num.insert(i+1, 99)
-print ("parents: ", p_num)
+#print ("parents: ", p_num)
 for i in range(0, len(p_num)-1):
 	path.append(dfs[i])
-	if ("}" in dfs[i]) and ("}" not in dfs[i+1]):
+	#if ("}" in dfs[i]) and ("}" not in dfs[i+1]):
+	#if ("}" in dfs[i]) and ("}" not in dfs[i+1]) and ("else" in dfs[i+1]):
+	if ("}" in dfs[i]) and ("}" not in dfs[i+1]) and (("else" in dfs[i+1]) or ("if" in dfs[i+1]) or ("while" in dfs[i+1])):
 		partition = open("partition.c", "w")
 		execution_path_r2 += 1
 		for i in range(0, len(path)):
@@ -181,7 +185,7 @@ for i in range(0, len(p_num)-1):
 				break
 		for k in range(0, temp_pop):
 			del p_num[temp_del]
-		print (p_num)
+		#print (p_num)
 partition = open("partition.c", "w")
 execution_path_r2 += 1
 for i in range(0, len(path)):

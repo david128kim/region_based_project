@@ -139,6 +139,7 @@ for i  in range(1, len(info)):
 			brackets_match -= 1			
 			if brackets_match == 0:
 				branch_leaf.append(i)
+				print ("leaf: ", branch_leaf)
 	treeID += 1
 temp = len(cond_list)
 for i in range(0, temp-1):
@@ -193,8 +194,8 @@ for i in range(0, len(p_num)-1):
 
 for i in range(0, len(p_num)-1):
 	path.append(dfs[i])
-	if ("}" in dfs[i]) and ("}" not in dfs[i+1]) and ("else" in dfs[i+1]):
-	#if ("}" in dfs[i]) and ("}" not in dfs[i+1]) and ("else" in dfs[i+1]) and ("if" in dfs[i+1]) and ("while" in dfs[i+1]): 
+	#if ("}" in dfs[i]) and ("}" not in dfs[i+1]) and ("else" in dfs[i+1]):
+	if ("}" in dfs[i]) and ("}" not in dfs[i+1]) and (("else" in dfs[i+1]) or ("if" in dfs[i+1]) or ("while" in dfs[i+1])): 
 		partition = open("partition.c", "w")
 		execution_path_r1 += 1
 		for i in range(0, len(path)):

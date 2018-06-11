@@ -1,4 +1,5 @@
 region1:
 	Global *= 3;
 region2:
+	if(Global > 0)
 	Global -= 10;
