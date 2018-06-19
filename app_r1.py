@@ -274,25 +274,34 @@ for i in range(1, len(info)):
                                         if k == len(info)-2:
                                                 temp_brackets -= 1
                                         if (temp_brackets == 0):
-                                                if "else if" not in info[k+1]:
+                                                if "else if" not in info[k+1] and k != len(info)-2:
                                                         branch_end = k
+                                                        break
+                                                elif "}" in info[k+1] and k == len(info)-2:
+                                                        branch_end = len(info)
                                                         break
                                                 else:
                                                         continue
-                        print ("branch_end: ", branch_end)
+                        #print ("branch_end: ", branch_end)
                         partition = open("partition.c", "w")
                         execution_path_r1 += 1
-                        print ("execution_path_r1: ", execution_path_r1)
-                        print ("end point: ", branch_end)
-                        for k in range(1, i):
-                                partition.write(info[k])
-                                print ("upper part: ",info[k])
-                        if branch_end == 0:
-                                info_length -= 1
-                        print ("info_length: ", info_length)
-                        for k in range(branch_end+1, info_length):
-                                partition.write(info[k])
-                                print ("down part: ", info[k])
-                        #partition.write("}\n")
+                        temp_brackets = 0
+                        print (temp_brackets)			
+                        for l in range(1, i):
+                                if "{" in info[l]:
+                                        temp_brackets += 1
+                                elif "}" in info[l]:
+                                        temp_brackets -= 1
+                                partition.write(info[l])
+                                #print ("upper part: ",info[l])
+                        for l in range(branch_end+1, info_length):
+                                if "{" in info[l]:
+                                        temp_brackets += 1
+                                elif "}" in info[l]:
+                                        temp_brackets -= 1
+                                partition.write(info[l])
+                                #print ("down part: ", info[l])
+                        for l in range(0, temp_brackets):
+                                partition.write("}\n")
                         partition.close()
                         os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
