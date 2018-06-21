@@ -1,19 +1,21 @@
 region1:
-	while (i < N){
+    	while (i < N){
     		pthread_mutex_lock(&m);
-    		while (num > 0)
+    		while (num > 0) {
       			pthread_cond_wait(&empty, &m);
+      		}
     		num++;
     		printf ("produce ....%d\n", i);
     		pthread_mutex_unlock(&m);
     		pthread_cond_signal(&full);
     		i++;
-  	}
+      	}
 region2:
   	while (j < N){
   		pthread_mutex_lock(&m);
-    		while (num == 0)
+    		while (num == 0) {
       			pthread_cond_wait(&full, &m);
+      		}
     		total=total+j;
     		printf("total ....%ld\n",total);
     		num--;

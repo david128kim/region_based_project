@@ -4,9 +4,14 @@ region1:
 		i += 2;
 		while (i != 0) {
 			i += 10;
-			if (i > 2) {
-				i -= 11;
-			}
+		}
+	}
+region2:
+	i *= 5;
+	if (i > 1) {
+		i += 2;
+		while (i != 0) {
+			i += 10;
 		}
 	}
 region2:
