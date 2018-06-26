@@ -1,18 +1,13 @@
 region1:
 	i *= 5;
-	if (i > 1) {
+	while (i > 1) {
 		i += 2;
 		while (i != 0) {
-			i += 10;
+        		if (i > 0) {
+    			i += 10;
+    			}
 		}
-	}
-region2:
-	i *= 5;
-	if (i > 1) {
-		i += 2;
-		while (i != 0) {
-			i += 10;
-		}
+		i += 3;
 	}
 region2:
 	i *= 5;

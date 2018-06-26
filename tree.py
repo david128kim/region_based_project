@@ -33,6 +33,7 @@ class Tree:
         depth += 1
 	#print depth_list
         for child in children:
+            #print ("child, depth: \n", child, depth)
             self.display(child, depth)  # recursive call
     def traverse(self, identifier, mode=_DEPTH):
         # Python generator. Loosly based on an algorithm from 
