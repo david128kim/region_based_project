@@ -303,7 +303,7 @@ for i in range(1, len(info)):
                             if (branch_layer[j] == temp_layer) and ("else" in branch_type[j]) and ("if" not in branch_type[j]):
                                     temp_branch += 1
 
-                if temp_branch > 1:
+                if temp_branch >= 1:
                         continue
                 else:
                         temp_brackets = 0
