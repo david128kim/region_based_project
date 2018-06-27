@@ -8,13 +8,13 @@ from tree import Tree
 
 tree = Tree()
 
-file = open("region_text/p-c.txt")
+file = open("region_text/branch.txt")
 treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r1, counter_bp, fork = 0, 0, 0, 0, 0, 0, 0, 0
 info, node_height, branch_layer, branch_point, branch_leaf, breakpoint, dfs, dfs_temp, cond_num, if_layer, branch_type = [], [], [], [], [], [], [], [], [], [], []
 start, end, counter_r2, r2_flag, main_flag, temp_node_length, temp_dfs, temp_pop = 1, 0, 0, 0, 0, 0, 0, 0
 constrain, constrain_state, path_cond_state, path_cond, cond_text, p_num, path, cond_list, cond_dfs, cond_final_list = "", [], [], [], [], [], [], [], [], []
 temp_layer, temp_branch, temp_brackets, branch_end, info_length, loop_flag, gap, temp_i = 0, 0, 0, 0, 0, 0, 0, 0
-loop_body, loop_start, loop_end, loop_brackets, temp_info, temp_body = [], [], [], [], [], []
+loop_body, loop_start, loop_end, loop_brackets, temp_info, temp_body, branch_start, branch_finish = [], [], [], [], [], [], [], []
 
 def extract_branch(a,b):
         a = b.replace("if", "")
@@ -84,6 +84,10 @@ for i  in range(1, len(info)):
                         cond_list.append(temp)
                         cond_final_list.append(temp)
                         print ("info, i, temp: ", info[i], i, temp)
+                        if branch_start == []:
+                                branch_start.append(temp + 1)
+                        else: 
+                                branch_start.append(i)
                 else:                                                           ################ else/while/if/elif then "if" appear ################
                         tree.add_node(info[i], info[treeID])
                         p_num.append(treeID)
@@ -328,7 +332,9 @@ for i in range(1, len(info)):
                                                 else:
                                                         continue
                         print ("branch_end: ", branch_end)
-                        
+#                        branch_start.append(i)
+                        if i in branch_start:
+                                branch_finish.append(branch_end + 1)
                         partition = open("partition.c", "w")
                         execution_path_r1 += 1
                         temp_brackets = 0
@@ -355,3 +361,16 @@ for i in range(1, len(info)):
                                         
                         partition.close()
                         os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
+#info_length = len(info)
+#if len(branch_finish) > 1:
+#        partition = open("partition.c", "w")
+#        execution_path_r1 += 1
+#        for i in range(0, len(branch_start)):
+#                gap = info_length - len(info)
+#                for j in range(0, branch_finish[i] - branch_start[i]):
+#                        del info[branch_start[i] - gap]
+#        for i in range(1, len(info)):
+#                partition.write(info[i])
+##                print ("All False Path: ", info[i])
+#        partition.close()
+#        os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c") 

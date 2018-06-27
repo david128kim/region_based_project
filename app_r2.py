@@ -15,7 +15,7 @@ info, info_bottom, branch_layer, branch_point, branch_leaf, breakpoint, dfs, if_
 start, end, counter_r2, r2_flag, main_flag, temp_pop = 1, 0, 0, 0, 0, 0
 constrain, constrain_state, path_cond_state, path_cond, cond_text, p_num, path, cond_list, cond_dfs, cond_final_list = "", [], [], [], [], [], [], [], [], []
 temp_layer, temp_branch, temp_brackets, branch_end, info_length, loop_flag, gap, temp_i = 0, 0, 0, 0, 0, 0, 0, 0
-loop_body, loop_start, loop_end, loop_brackets, temp_info, temp_body = [], [], [], [], [], []
+loop_body, loop_start, loop_end, loop_brackets, temp_info, temp_body, branch_start, branch_finish = [], [], [], [], [], [], [], []
 
 for line in file:
         counter_r2 += 1
@@ -80,6 +80,10 @@ for i  in range(1, len(info)):
                         p_num.append(temp)
                         cond_list.append(temp)
                         cond_final_list.append(temp)
+                        if branch_start == []:
+                                branch_start.append(temp + 1)
+                        else: 
+                                branch_start.append(i)
                 else:
                         tree.add_node(info[i], info[treeID])
                         p_num.append(treeID)
@@ -285,7 +289,6 @@ for i in range(1, len(info)):
                                     temp_branch += 1
                 if temp_branch >= 1:
                         continue
-#                        break
                 else:
                         temp_brackets = 0
                         #temp_brackets = temp_layer - 1
@@ -309,9 +312,11 @@ for i in range(1, len(info)):
                                                 else:
                                                         continue
                         print ("branch_end: ", branch_end)
-                        
+#                        branch_start.append(i)
+                        if i in branch_start:
+                                branch_finish.append(branch_end + 1)
                         partition = open("partition.c", "w")
-                        execution_path_r1 += 1
+                        execution_path_r2 += 1
                         temp_brackets = 0
                         for l in range(1, i):
                                 if "{" in info[l]:
@@ -328,11 +333,25 @@ for i in range(1, len(info)):
                                         temp_brackets -= 1
                                 if temp_brackets >= 0:
                                         partition.write(info[l])
-
                                 print ("down part: ", info[l])
+                                
                         if temp_brackets > 0:
                                 for m in range(0, temp_brackets):
-                                        partition.write("}\n")
-                                        
+                                        partition.write("}\n")                                      
                         partition.close()
-                        os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
+                        os.system("mv partition.c exe_r2_path"+str(execution_path_r2)+".c")
+info_length = len(info)
+if len(branch_finish) > 1:
+        partition = open("partition.c", "w")
+        execution_path_r2 += 1
+        for i in range(0, len(branch_start)):
+                gap = info_length - len(info)
+                for j in range(0, branch_finish[i] - branch_start[i]):
+                        del info[branch_start[i] - gap]
+        for i in range(1, len(info)):
+                partition.write(info[i])
+                print ("All False Path: ", info[i])
+        partition.close()
+        os.system("mv partition.c exe_r2_path"+str(execution_path_r2)+".c")                
+                        
+                
