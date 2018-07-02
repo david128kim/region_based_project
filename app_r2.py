@@ -11,7 +11,7 @@ tree = Tree()
 
 file = open("region_text/p-c.txt")
 treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r2, counter_bp = 0, 0, 0, 0, 0, 0, 0
-info, info_bottom, branch_layer, branch_point, branch_leaf, breakpoint, dfs, if_layer, branch_type = [], [], [], [], [], [], [], [], []
+info, info_bottom, branch_layer, branch_point, branch_leaf, breakpoint, dfs, cond_num, if_layer, branch_type = [], [], [], [], [], [], [], [], [], []
 start, end, counter_r2, r2_flag, main_flag, temp_pop = 1, 0, 0, 0, 0, 0
 constrain, constrain_state, path_cond_state, path_cond, cond_text, p_num, path, cond_list, cond_dfs, cond_final_list = "", [], [], [], [], [], [], [], [], []
 temp_layer, temp_branch, temp_brackets, branch_end, info_length, loop_flag, gap, temp_i = 0, 0, 0, 0, 0, 0, 0, 0
@@ -72,6 +72,7 @@ for i  in range(1, len(info)):
         info[i] = info[i] + "/*R2 line:" + str(treeID) + "*/"
         if (("if" in info[i]) and ("else" not in info[i])):
                 brackets_match += 1
+                cond_num.append(brackets_match)
                 branch_layer.append(brackets_match)
                 branch_point.append(treeID)
 #                if ("else" not in  info[i-1]):
@@ -103,6 +104,7 @@ for i  in range(1, len(info)):
 
         elif (("else" in info[i]) and ("if" in info[i])):
                 brackets_match += 1
+                cond_num.append(brackets_match)
                 branch_layer.append(brackets_match)
                 if (branch_layer[len(branch_layer)-1] < branch_layer[len(branch_layer)-2]):
                         branch_point.pop()
@@ -123,6 +125,7 @@ for i  in range(1, len(info)):
 
         elif (("else" in info[i]) and ("if" not in info[i])):
                 brackets_match += 1
+                cond_num.append(brackets_match)
                 branch_layer.append(brackets_match)
                 if (branch_layer[len(branch_layer)-1] < branch_layer[len(branch_layer)-2]):
                         branch_point.pop()
