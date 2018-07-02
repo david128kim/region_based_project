@@ -5,7 +5,7 @@
 #define N 3
 
 int num;
-unsigned long total;
+int total;
 int flag;
 
 pthread_mutex_t m;
