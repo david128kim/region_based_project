@@ -23,8 +23,6 @@ for line in file:
                 if brackets <= 1 and "return" not in line and "+" not in line:
                         source_line.append(line)
                         print (line)
-                elif "return" in line:
-                        break
                 else:
                         continue
         
