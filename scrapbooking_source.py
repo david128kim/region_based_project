@@ -20,7 +20,7 @@ for line in file:
                 brackets -= 1
         elif "(" not in line and "{" not in line and "}" not in line:
 #                break
-                if brackets <= 1 and "return" not in line:
+                if brackets <= 1 and "return" not in line and "+" not in line:
                         source_line.append(line)
                         print (line)
                 elif "return" in line:
