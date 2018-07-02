@@ -69,12 +69,13 @@ print ("fixing info: ", info)
 
 tree.add_node(info[treeID])
 for i  in range(1, len(info)):
-        info[i] = info[i] + "//R2 line:" + str(treeID)
+        info[i] = info[i] + "/*R2 line:" + str(treeID) + "*/"
         if (("if" in info[i]) and ("else" not in info[i])):
                 brackets_match += 1
                 branch_layer.append(brackets_match)
                 branch_point.append(treeID)
-                if ("else" not in  info[i-1]):
+#                if ("else" not in  info[i-1]):
+                if cond_num[len(cond_num)-1] == cond_num[len(cond_num)-2]:
                         temp = branch_point[brackets_match-1]
                         tree.add_node(info[i], info[temp])
                         p_num.append(temp)

@@ -8,7 +8,7 @@ from tree import Tree
 
 tree = Tree()
 
-file = open("region_text/branch.txt")
+file = open("region_text/p-c.txt")
 treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r1, counter_bp, fork = 0, 0, 0, 0, 0, 0, 0, 0
 info, node_height, branch_layer, branch_point, branch_leaf, breakpoint, dfs, dfs_temp, cond_num, if_layer, branch_type = [], [], [], [], [], [], [], [], [], [], []
 start, end, counter_r2, r2_flag, main_flag, temp_node_length, temp_dfs, temp_pop = 1, 0, 0, 0, 0, 0, 0, 0
@@ -71,7 +71,7 @@ for i in range(len(loop_start)-1, -1, -1):
 tree.add_node(info[treeID])
 #############       construct tree and path condition   ########## 
 for i  in range(1, len(info)):
-        info[i] = info[i] + "//R1 line:" + str(treeID)
+        info[i] = info[i] + "/*R1 line:" + str(treeID) + "*/"
         if (("if" in info[i]) and ("else" not in info[i])):
                 brackets_match += 1
                 cond_num.append(brackets_match)
@@ -189,7 +189,7 @@ for i  in range(1, len(info)):
                         brackets_match -= 1
                         if brackets_match == 0:
                                 branch_leaf.append(i)
-                
+#        info[i] = info[i] + " //R1 line:" + str(treeID)       
         treeID += 1
 
 #################       merge constrain we go through at each execution path
@@ -361,16 +361,16 @@ for i in range(1, len(info)):
                                         
                         partition.close()
                         os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
-#info_length = len(info)
-#if len(branch_finish) > 1:
-#        partition = open("partition.c", "w")
-#        execution_path_r1 += 1
-#        for i in range(0, len(branch_start)):
-#                gap = info_length - len(info)
-#                for j in range(0, branch_finish[i] - branch_start[i]):
-#                        del info[branch_start[i] - gap]
-#        for i in range(1, len(info)):
-#                partition.write(info[i])
-##                print ("All False Path: ", info[i])
-#        partition.close()
-#        os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c") 
+info_length = len(info)
+if len(branch_finish) > 1:
+        partition = open("partition.c", "w")
+        execution_path_r1 += 1
+        for i in range(0, len(branch_start)):
+                gap = info_length - len(info)
+                for j in range(0, branch_finish[i] - branch_start[i]):
+                        del info[branch_start[i] - gap]
+        for i in range(1, len(info)):
+                partition.write(info[i])
+                print ("All False Path: ", info[i])
+        partition.close()
+        os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c") 
