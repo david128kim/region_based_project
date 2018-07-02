@@ -6,16 +6,28 @@ import string
 from app_r1 import execution_path_r1
 from app_r2 import execution_path_r2
 
-source_line, source_r1, source_r2, region_combination, ir_r1, ir_r2, ir_line, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2 = [], [], [], 0, [], [], [], 0, 0, 0, 0, 0, 0
+source_line, source_r1, source_r2, ir_r1, ir_r2, ir_line, = [], [], [], [], [], [] 
+counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, region_combination, brackets = 0, 0, 0, 0, 0, 0, 0, 0
 program_name = input("Please key in your program name: \n")
 shared_data = input("Please key in your shared data name: \n")
 file = open(program_name)
 whole = open('whole_program.c', 'w')
 
 for line in file:
-        if "(" in line:
-                break
-        source_line.append(line)
+        if "{" in line:
+                brackets += 1
+        elif "}" in line:
+                brackets -= 1
+        elif "(" not in line and "{" not in line and "}" not in line:
+#                break
+                if brackets <= 1 and "return" not in line:
+                        source_line.append(line)
+                        print (line)
+                elif "return" in line:
+                        break
+                else:
+                        continue
+        
 file.close()
 
 for i in range(1, execution_path_r1+1):
