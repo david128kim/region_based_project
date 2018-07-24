@@ -78,12 +78,15 @@ for line in region:
     if "region" not in line:
         source_r.append(line)
 
-klee.write('#include "klee.h"\n')
+klee.write('#include "klee/klee.h"\n')
 for k in range(0, len(source_line)):
     klee.write(source_line[k])
     whole.write(source_line[k])
 klee.write('int main(int argc, char **argv) {\n')
 whole.write('int main(int argc, char **argv) {\n')
+for j in range(0, len(local_var)):
+    klee.write(local_var[j])
+    whole.write(local_var[j])
 klee.write('klee_make_symbolic(&'+shared_data+', sizeof('+shared_data+'), "'+shared_data+'");\n')
 for k in range(0, len(source_r)):
         klee.write(source_r[k])
