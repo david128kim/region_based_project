@@ -7,7 +7,7 @@ import string
 import app_r1
 import app_r2
 
-ValidInputs, source_line, source_r, source_r1, source_r2, ir_r1, ir_r2, ir_line = [], [], [], [], [], [], [], []
+ValidInputs, source_line, source_r, source_r1, source_r2, ir_r1, ir_r2, ir_line, local_var = [], [], [], [], [], [], [], [], []
 region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 program_name = input("Please key in your program name: \n")
 shared_data = input("Please key in your shared data name: \n")
@@ -20,6 +20,9 @@ for line in file:
         if "(" in line:
                 break
         source_line.append(line)
+for line in file:
+        if "(" not in line and "{" not in line and "}" not in line and "+" not in line and "-" not in line and "*" not in line and "/" not in line:
+                local_var.append(line)
 file.close()
 
 #file = open("region_text/p-c.txt")
@@ -27,13 +30,11 @@ for i in range(1, int(num_region)+1):
     file = open("r"+str(i)+"_path.c")
     region = open('region'+str(i)+'.c', 'w')
     for k in range(0, len(source_line)):
-        region.write(source_line[k])
+            region.write(source_line[k])
     region.write('int main(int argc, char **argv) {\n')
+    for j in range(0, len(local_var)):
+            region.write(local_var[j])
     for line in file:
-#        if "region"+str(i)+"" in line:
-#            region.write('return 0;\n}')
-#            break
-#        if "region"+str(i-1)+"" not in line:
             region.write(line)
     region.write('return 0;\n}')
     region.close()
