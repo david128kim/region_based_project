@@ -22,63 +22,65 @@ for line in file:
         source_line.append(line)
 file.close()
 
-file = open("region_text/p-c.txt")
-for i in range(2, int(num_region)+1):
-	region = open('region'+str(i-1)+'.c', 'w')
-	for k in range(0, len(source_line)):
-		region.write(source_line[k])
-	region.write('int main(int argc, char **argv) {\n')
-	for line in file:
-		if "region"+str(i)+"" in line:
-			region.write('return 0;\n}')
-			break
-		if "region"+str(i-1)+"" not in line:
-			region.write(line)
-	region.close()
-#######################################################################
-region = open('region'+str(num_region)+'.c', 'w')
-for k in range(0, len(source_line)):
-	region.write(source_line[k])
-region.write('int main(int argc, char **argv) {\n')
-for line in file:
-	if "region"+str(int(num_region)-1)+"" not in line:
-		region.write(line)
-region.write('return 0;\n}')
-region.close()
-file.close()
+#file = open("region_text/p-c.txt")
+for i in range(1, int(num_region)+1):
+    file = open("r"+str(i)+"_path.c")
+    region = open('region'+str(i)+'.c', 'w')
+    for k in range(0, len(source_line)):
+        region.write(source_line[k])
+    region.write('int main(int argc, char **argv) {\n')
+    for line in file:
+#        if "region"+str(i)+"" in line:
+#            region.write('return 0;\n}')
+#            break
+#        if "region"+str(i-1)+"" not in line:
+            region.write(line)
+    region.write('return 0;\n}')
+    region.close()
+########################################################################
+#region = open('region'+str(num_region)+'.c', 'w')
+#for k in range(0, len(source_line)):
+#    region.write(source_line[k])
+#region.write('int main(int argc, char **argv) {\n')
+#for line in file:
+#    if "region"+str(int(num_region)-1)+"" not in line:
+#        region.write(line)
+#region.write('return 0;\n}')
+#region.close()
+#file.close()
 
 for i in range(1, int(num_region)+1):
-	os.system('clang -Os -S -emit-llvm region'+str(i)+'.c -o region'+str(i)+'.ll')
-	os.system('mv region'+str(i)+'.ll exe_IR/')
+    os.system('clang -Os -S -emit-llvm region'+str(i)+'.c -o region'+str(i)+'.ll')
+    os.system('mv region'+str(i)+'.ll exe_IR/')
 #######################################################################
 for i in range(1, int(num_region)+1):
-	ir_line =[]
-	counter_region = 0
-	region = open('exe_IR/region'+str(i)+'.ll','r')
-	for line in region:
-		counter_region += 1 
-		ir_line.append(line)
-		if "define" in line:
-			entry_region = counter_region
-		elif "ret" in line:
-			return_region = counter_region
-	sequential = open('concurrent_program.ll','a')
-	sequential.write('region'+str(i)+': \n')
-	for k in range(entry_region, return_region-1):
-		sequential.write(ir_line[k])
-	region.close()
+    ir_line =[]
+    counter_region = 0
+    region = open('exe_IR/region'+str(i)+'.ll','r')
+    for line in region:
+        counter_region += 1 
+        ir_line.append(line)
+        if "define" in line:
+            entry_region = counter_region
+        elif "ret" in line:
+            return_region = counter_region
+    sequential = open('concurrent_program.ll','a')
+    sequential.write('region'+str(i)+': \n')
+    for k in range(entry_region, return_region-1):
+        sequential.write(ir_line[k])
+    region.close()
 sequential.close()
 os.system('mv concurrent_program.ll exe_concurrent/')
 
 region = open("region_text/p-c.txt", 'r')
 for line in region:
-	if "region" not in line:
-		source_r.append(line)
+    if "region" not in line:
+        source_r.append(line)
 
 klee.write('#include "klee.h"\n')
 for k in range(0, len(source_line)):
-	klee.write(source_line[k])
-	whole.write(source_line[k])
+    klee.write(source_line[k])
+    whole.write(source_line[k])
 klee.write('int main(int argc, char **argv) {\n')
 whole.write('int main(int argc, char **argv) {\n')
 klee.write('klee_make_symbolic(&'+shared_data+', sizeof('+shared_data+'), "'+shared_data+'");\n')

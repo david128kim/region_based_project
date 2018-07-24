@@ -10,6 +10,7 @@ from tree import Tree
 tree = Tree()
 
 file = open("region_text/p-c.txt")
+region_path = open("r2_path.c", "w")
 treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r2, counter_bp = 0, 0, 0, 0, 0, 0, 0
 info, info_bottom, branch_layer, branch_point, branch_leaf, breakpoint, dfs, cond_num, if_layer, branch_type = [], [], [], [], [], [], [], [], [], []
 start, end, counter_r2, r2_flag, main_flag, temp_pop = 1, 0, 0, 0, 0, 0
@@ -246,6 +247,10 @@ tree.display(info[0])
 for node in tree.traverse(info[0]):
         if "region" not in node:
                 dfs.append(node)
+for i in range(0, len(dfs)):
+        region_path.write(dfs[i])
+region_path.close()
+
 """
 #print (dfs)
 for i in range(0, len(p_num)-1):
