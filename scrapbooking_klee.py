@@ -2,8 +2,10 @@ import os
 import subprocess
 import string
 
-from app_r1 import execution_path_r1
-from app_r2 import execution_path_r2
+#from app_r1 import execution_path_r1
+#from app_r2 import execution_path_r2
+import app_r1
+import app_r2
 
 ValidInputs, source_line, source_r, source_r1, source_r2, ir_r1, ir_r2, ir_line = [], [], [], [], [], [], [], []
 region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -20,7 +22,7 @@ for line in file:
         source_line.append(line)
 file.close()
 
-file = open("region_text/datarace.txt")
+file = open("region_text/p-c.txt")
 for i in range(2, int(num_region)+1):
 	region = open('region'+str(i-1)+'.c', 'w')
 	for k in range(0, len(source_line)):
@@ -68,12 +70,12 @@ for i in range(1, int(num_region)+1):
 sequential.close()
 os.system('mv concurrent_program.ll exe_concurrent/')
 
-region = open("region_text/datarace.txt", 'r')
+region = open("region_text/p-c.txt", 'r')
 for line in region:
 	if "region" not in line:
 		source_r.append(line)
 
-klee.write('#include "../klee_src/include/klee/klee.h"\n')
+klee.write('#include "klee.h"\n')
 for k in range(0, len(source_line)):
 	klee.write(source_line[k])
 	whole.write(source_line[k])

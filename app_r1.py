@@ -15,7 +15,7 @@ start, end, counter_r2, r2_flag, main_flag, temp_node_length, temp_dfs, temp_pop
 constrain, constrain_state, path_cond_state, path_cond, cond_text, p_num, path, cond_list, cond_dfs, cond_final_list = "", [], [], [], [], [], [], [], [], []
 temp_layer, temp_branch, temp_brackets, branch_end, info_length, loop_flag, gap, temp_i = 0, 0, 0, 0, 0, 0, 0, 0
 loop_body, loop_start, loop_end, loop_brackets, temp_info, temp_body, branch_start, branch_finish = [], [], [], [], [], [], [], []
-
+fork_cond, fork_state = [], []
 def extract_branch(a,b):
         a = b.replace("if", "")
         a = a.replace("(", "", 1)
@@ -35,6 +35,9 @@ for i in range(1, len(info)):
         if "{" in info[i]:
                 brackets_match += 1
                 if "while" in info[i]:
+                        constrain = info[i].replace("while", "if")
+                        del info[i]
+                        info.insert(i, constrain)
                         loop_start.append(i)
                         loop_brackets.append(brackets_match)
         elif "}" in info[i]:
@@ -42,7 +45,7 @@ for i in range(1, len(info)):
                 if (loop_brackets != []) and (brackets_match == loop_brackets[len(loop_brackets)-1] - 1):
                         loop_end.append(i)
                         loop_brackets.pop()
-
+#print ("original info: ", info)
 #############   eliminate while statement and implement loop heuristic reduction
 loop_end.reverse()
 info_length = len(info)
@@ -50,14 +53,16 @@ for i in range(len(loop_start)-1, -1, -1):
         for j in range(loop_start[i] + 1, loop_end[i] + gap):
                 #if "while" not in info[j]:
                 temp_body.append(info[j])
-        for j in range(loop_start[i], loop_end[i] + 1 + gap):
-                del info[loop_start[i]]
-        print ("temp_body: ", temp_body)
-        if i == 0:
-                loop_body.extend(temp_body)
-                print ("loop_body: ", loop_body)
-        temp_body = temp_body * 2
-        temp_i = loop_start[i]
+#        for j in range(loop_start[i], loop_end[i] + 1 + gap):
+#                del info[loop_start[i]]
+#        print ("temp_body: ", temp_body)
+#        print (i)
+#        if i == 0:
+#                loop_body.extend(temp_body)
+#                print ("loop_body: ", loop_body)
+#        temp_body = temp_body * 2
+        temp_i = loop_start[i] + 1
+#        print (temp_i)
         for j in range(0, len(temp_body)):
                 info.insert(temp_i, temp_body[j])
                 temp_i += 1
@@ -83,7 +88,7 @@ for i  in range(1, len(info)):
                         p_num.append(temp)
                         cond_list.append(temp)
                         cond_final_list.append(temp)
-                        print ("info, i, temp: ", info[i], i, temp)
+#                        print ("info, i, temp: ", info[i], i, temp)
                         if branch_start == []:
                                 branch_start.append(temp + 1)
                         else: 
@@ -95,14 +100,14 @@ for i  in range(1, len(info)):
                         cond_final_list.append(treeID)
 #                        print ("info, i, treeID: ", info[i], i, treeID)
 
-                constrain = info[i].replace("if", "")
-                constrain = constrain.replace("(", "", 1)
-                constrain = constrain.replace(")", "", 1)
-                constrain = constrain.replace("{", "")
-                constrain = constrain.replace("//R1 line:" + str(treeID), "")
-                constrain_state.append(constrain)
-                path_cond_state.append(constrain)
-                cond_text.append(constrain)	
+#                constrain = info[i].replace("if", "")
+#                constrain = constrain.replace("(", "", 1)
+#                constrain = constrain.replace(")", "", 1)
+#                constrain = constrain.replace("{", "")
+#                constrain = constrain.replace("/*R1 line:" + str(treeID) + "*/", "")
+#                constrain_state.append(constrain)
+#                path_cond_state.append(constrain)
+#                cond_text.append(constrain)	
 
         elif ("else if" in info[i]):
                 brackets_match += 1
@@ -118,13 +123,13 @@ for i  in range(1, len(info)):
                 cond_list.append(temp)
                 cond_final_list.append(temp)
 
-                constrain = info[i].replace("else if", "")
-                constrain = constrain.replace("(", "", 1)
-                constrain = constrain.replace(")", "", 1)
-                constrain = constrain.replace("{", "")
-                constrain_state.append("null")
-                path_cond_state.append(constrain)
-                cond_text.append(constrain)
+#                constrain = info[i].replace("else if", "")
+#                constrain = constrain.replace("(", "", 1)
+#                constrain = constrain.replace(")", "", 1)
+#                constrain = constrain.replace("{", "")
+#                constrain_state.append("null")
+#                path_cond_state.append(constrain)
+#                cond_text.append(constrain)
 
         elif (("else" in info[i]) and ("if" not in info[i])):
                 brackets_match += 1
@@ -141,38 +146,38 @@ for i  in range(1, len(info)):
                 cond_list.append(temp)
                 cond_final_list.append(temp)
 
-                constrain_state.append("null")
-                constrain = " !(" + constrain_state[temp] + ") "
-                path_cond_state.append(constrain)
-                cond_text.append(constrain)
+#                constrain_state.append("null")
+#                constrain = " !(" + constrain_state[temp] + ") "
+#                path_cond_state.append(constrain)
+#                cond_text.append(constrain)
 
-        elif "while" in info[i]:
-                brackets_match += 1
-                cond_num.append(brackets_match)
-                branch_layer.append(brackets_match)
-                branch_point.append(treeID)
-                if cond_num[len(cond_num)-1] == cond_num[len(cond_num)-2]:
-                        temp = branch_point[brackets_match-1]
-                        tree.add_node(info[i], info[temp])
-                        p_num.append(temp)
-                        cond_list.append(temp)
-                        cond_final_list.append(temp)
-#                        print ("info, i, temp: ", info[i], i, temp)
-                else:                                                           ################ else/while then "while" appear ################
-                        tree.add_node(info[i], info[treeID])
-                        p_num.append(treeID)
-                        cond_list.append(treeID)
-                        cond_final_list.append(treeID)
-#                        print ("info, i, treeID: ", info[i], i, treeID)
-
-                constrain = info[i].replace("while", "")
-                constrain = constrain.replace("(", "", 1)
-                constrain = constrain.replace(")", "", 1)
-                constrain = constrain.replace("{", "")
-                constrain = constrain.replace("//R1 line:" + str(treeID), "")
-                constrain_state.append(constrain)
-                path_cond_state.append(constrain)
-                cond_text.append(constrain)
+#        elif "while" in info[i]:
+#                brackets_match += 1
+#                cond_num.append(brackets_match)
+#                branch_layer.append(brackets_match)
+#                branch_point.append(treeID)
+#                if cond_num[len(cond_num)-1] == cond_num[len(cond_num)-2]:
+#                        temp = branch_point[brackets_match-1]
+#                        tree.add_node(info[i], info[temp])
+#                        p_num.append(temp)
+#                        cond_list.append(temp)
+#                        cond_final_list.append(temp)
+##                        print ("info, i, temp: ", info[i], i, temp)
+#                else:                                                           ################ else/while then "while" appear ################
+#                        tree.add_node(info[i], info[treeID])
+#                        p_num.append(treeID)
+#                        cond_list.append(treeID)
+#                        cond_final_list.append(treeID)
+##                        print ("info, i, treeID: ", info[i], i, treeID)
+#
+#                constrain = info[i].replace("while", "")
+#                constrain = constrain.replace("(", "", 1)
+#                constrain = constrain.replace(")", "", 1)
+#                constrain = constrain.replace("{", "")
+#                constrain = constrain.replace("/*R1 line:" + str(treeID) + "*/", "")
+#                constrain_state.append(constrain)
+#                path_cond_state.append(constrain)
+#                cond_text.append(constrain)
 
 
         else:
@@ -192,33 +197,47 @@ for i  in range(1, len(info)):
 #        info[i] = info[i] + " //R1 line:" + str(treeID)       
         treeID += 1
 
+###########     record every branch type    ############
+#for i in range(1, len(info)):
+#        if "if" in info[i] and "else" not in info[i]:
+#                branch_type.append("if")
+#        elif "else" in info[i] and "if" in info[i]:
+#                branch_type.append("else if")
+#        elif "else" in info[i] and "if" not in info[i]:
+#                branch_type.append("else")
+#        elif "while" in info[i]:
+#                branch_type.append("while")
+
 #################       merge constrain we go through at each execution path
-temp = len(cond_list)
-print ("branch_layer: ", branch_layer)
-for i in range(0, temp-1):
-        cond_dfs.append(cond_text[i])
-        if (cond_final_list[i+1] <= cond_final_list[i]):
-                constrain = "1"
-                for j in range(0, len(cond_dfs)):
-                        constrain = constrain + " && " + path_cond_state[j]
-                path_cond.append(constrain)
-                temp_state_pop = 0
-                temp_cond_dfs_length = len(cond_dfs)
-                for k in range(len(cond_dfs)-1, -1, -1):
-                        if cond_list[temp_cond_dfs_length] <= cond_list[k]:
-                                cond_dfs.pop()
-                                temp_state_pop += 1
-                                temp_del = k
-                        else:
-                                break
-                for l in range(0, temp_state_pop):
-                        del cond_list[temp_del]
-                        del path_cond_state[temp_del]
-constrain = "1"
-for i in range(0, len(path_cond_state)):
-        constrain = constrain + " && " + path_cond_state[i]
-path_cond.append(constrain)
-print ("path_cond: ", path_cond)
+#temp = len(cond_list)
+#fork_cond = path_cond_state
+#print ("path_cond state: ", path_cond_state)
+#print ("branch_layer: ", branch_layer)
+#print ("cond_final_list: ", cond_final_list)
+#for i in range(0, temp-1):
+#        cond_dfs.append(cond_text[i])
+#        if (cond_final_list[i+1] <= cond_final_list[i]) and "else" in branch_type[i+1]:
+#                constrain = "1"
+#                for j in range(0, len(cond_dfs)):
+#                        constrain = constrain + " && " + path_cond_state[j]
+#                path_cond.append(constrain)
+#                temp_state_pop = 0
+#                temp_cond_dfs_length = len(cond_dfs)
+#                for k in range(len(cond_dfs)-1, -1, -1):
+#                        if cond_list[temp_cond_dfs_length] <= cond_list[k]:
+#                                cond_dfs.pop()
+#                                temp_state_pop += 1
+#                                temp_del = k
+#                        else:
+#                                break
+#                for l in range(0, temp_state_pop):
+#                        del cond_list[temp_del]
+#                        del path_cond_state[temp_del]
+#constrain = "1"
+#for i in range(0, len(path_cond_state)):
+#        constrain = constrain + " && " + path_cond_state[i]
+#path_cond.append(constrain)
+#print ("path_cond state: ", path_cond_state)
 ###############     if there is any statement behind branch statement region    ###############
 if branch_boundrary > 0:
         for i in range(0, 1):
@@ -234,11 +253,11 @@ if branch_boundrary > 0:
 tree.display(info[0])
 #20180621 change procedure: loop heuristic then build tree
 
-print("***** DEPTH-FIRST ITERATION *****"), '\n'
+#print("***** DEPTH-FIRST ITERATION *****"), '\n'
 for node in tree.traverse(info[0]):                                                     #  calculate path amount
         if "region" not in node:
                 dfs.append(node)
-
+"""
 ############    insert 99 instead none meanningful "}"
 for i in range(0, len(p_num)-1):
         if (p_num[i+1] < p_num[i]) and ("{" not in dfs[i+1]):
@@ -257,7 +276,7 @@ for i in range(0, len(p_num)-1):
                         #if ("if" not in dfs[i]) and ("elif" not in dfs[i]) and ("else" not in dfs[i]) and ("}" not in dfs[i]):
                         partition.write(path[i])
                 partition.close()
-                print ("path: ", path)
+#                print ("path: ", path)
                 os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
                 temp_pop = 0
                 temp_path = len(path)
@@ -279,40 +298,32 @@ partition = open("partition.c", "w")
 execution_path_r1 += 1
 for i in range(0, len(path)):
         partition.write(path[i])
-partition.write("}\n")
-print ("the last: ", path)
+#partition.write("}\n")
+#print ("the last: ", path)
 partition.close()
 os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
 
-###########     record every branch type    ############
-for i in range(1, len(info)):
-        if "if" in info[i] and "else" not in info[i]:
-                branch_type.append("if")
-        elif "else" in info[i] and "if" in info[i]:
-                branch_type.append("else if")
-        elif "else" in info[i] and "if" not in info[i]:
-                branch_type.append("else")
-        elif "while" in info[i]:
-                branch_type.append("while")
-print ("branch_type: ", branch_type)
+#print ("branch_type: ", branch_type)
 
 ###########     forking each false condition without other choose ("elif", "else"): for "if" only
 for i in range(1, len(info)):
         if (("if" in info[i] ) and "else" not in info[i]) or "while" in info[i]:
                 temp_layer += 1
-                if "while" in info[i]:
-                        temp_branch = -1
-                else:
-                    for j in range(0, len(branch_layer)):
-                            if (branch_layer[j] == temp_layer) and ("else" in branch_type[j]) and ("if" not in branch_type[j]):
-                                    temp_branch += 1
+#                if "while" in info[i]:
+#                        temp_branch = -1
+#                else:
+                for j in range(0, len(branch_layer)):
+                        if (branch_layer[j] == temp_layer) and ("else" in branch_type[j]) and ("if" not in branch_type[j]):
+                                temp_branch += 1
 
                 if temp_branch >= 1:
+                        fork_state.append("null")
                         continue
                 else:
+                        fork_state.append("fork")
                         temp_brackets = 0
                         #temp_brackets = temp_layer - 1
-                        print ("if start location: ", i)
+#                        print ("if start location: ", i)
                         for k in range(i, len(info)):
                                 if "{" in info[k]:
                                         temp_brackets += 1
@@ -331,7 +342,7 @@ for i in range(1, len(info)):
                                                         break
                                                 else:
                                                         continue
-                        print ("branch_end: ", branch_end)
+#                        print ("branch_end: ", branch_end)
 #                        branch_start.append(i)
                         if i in branch_start:
                                 branch_finish.append(branch_end + 1)
@@ -344,7 +355,7 @@ for i in range(1, len(info)):
                                 elif "}" in info[l]:
                                         temp_brackets -= 1
                                 partition.write(info[l])
-                                print ("upper part: ",info[l])
+#                                print ("upper part: ",info[l])
                        
                         for l in range(branch_end+1, len(info)):
                                 if "{" in info[l]:
@@ -354,13 +365,27 @@ for i in range(1, len(info)):
                                 if temp_brackets >= 0:
                                         partition.write(info[l])
 
-                                print ("down part: ", info[l])
+#                                print ("down part: ", info[l])
                         if temp_brackets > 0:
                                 for m in range(0, temp_brackets):
                                         partition.write("}\n")
                                         
                         partition.close()
                         os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c")
+
+#print ("fork_state: ", fork_state)
+#print ("fork_cond: ", fork_cond)
+#for i in range(0, len(fork_state)):
+#        #constrain = "1"
+#        if "fork" in fork_state[i]:
+#                constrain = " !(" + fork_cond[i] + ") " 
+#                for j in range(0, i):
+#                        constrain = constrain + "&&" + fork_cond[j]
+#                for j in range(i+1, len(fork_state)):
+#                        constrain = constrain + "&&" + fork_cond[j]
+#        path_cond.append(constrain)
+print ("path_cond: ", path_cond)
+
 info_length = len(info)
 if len(branch_finish) > 1:
         partition = open("partition.c", "w")
@@ -371,6 +396,7 @@ if len(branch_finish) > 1:
                         del info[branch_start[i] - gap]
         for i in range(1, len(info)):
                 partition.write(info[i])
-                print ("All False Path: ", info[i])
+#                print ("All False Path: ", info[i])
         partition.close()
         os.system("mv partition.c exe_r1_path"+str(execution_path_r1)+".c") 
+"""
