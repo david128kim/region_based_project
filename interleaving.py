@@ -3,10 +3,10 @@ import subprocess
 import string
 import itertools
 import time
-from app_r1 import execution_path_r1
-from app_r2 import execution_path_r2
-import scrapbooking_source
-#import scrapbooking_klee
+#from app_r1 import execution_path_r1
+#from app_r2 import execution_path_r2
+#import scrapbooking_source
+import scrapbooking_klee
 
 interleaving, a, b, temp, old_order = [], [], [], [], ()
 combination = {}
@@ -33,7 +33,7 @@ for k in range(1, 2):
                 if "region1" not in line and "region2" not in line: #unnecessary prune
                         a.append(line)
                         counter_t1 += 1
-                        if (("load" in line) or ("store" in line) or ("mutex" in line) or ("signal" in line)):
+                        if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line) or ("mutex" in line) or ("signal" in line):
                                 a.insert(counter_t1+t1_insert_number, "tie")
                                 insert_temp += 1
                                 t1_insert_number += 1
@@ -56,7 +56,7 @@ for k in range(1, 2):
         for line in file:
                 b.append(line)
                 counter_t2 += 1
-                if (("load" in line) or ("store" in line)) or ("mutex" in line) or ("signal" in line):
+                if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line) or ("mutex" in line) or ("signal" in line):
                         b.insert(counter_t2+t2_insert_number, "tie")
                         insert_temp += 1
                         t2_insert_number += 1
@@ -124,8 +124,8 @@ for k in range(1, 2):
         path_amount = file_length/(len(a)+len(b)-t1_insert_number-t2_insert_number)
         print ("total path amount: ", file_length/(len(a)+len(b)-t1_insert_number-t2_insert_number))
 ####################################################################################################
-#for i in range(1, len(scrapbooking_klee.ValidInputs)+1):
-for i in range(1, 2):
+for i in range(1, len(scrapbooking_klee.ValidInputs)+1):
+#for i in range(1, 2):
 	while(counter < file_length):
 		generating = open('answer.ll', 'w')
 		for i in range(0,len(a)+len(b)-t1_insert_number-t2_insert_number):

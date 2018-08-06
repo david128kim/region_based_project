@@ -7,7 +7,7 @@ import string
 import app_r1
 import app_r2
 
-ValidInputs, source_line, source_r, source_r1, source_r2, ir_r1, ir_r2, ir_line, local_var = [], [], [], [], [], [], [], [], []
+ValidInputs, source_line, source_r, ir_line, local_var, program = [], [], [], [], [], []
 region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 program_name = input("Please key in your program name: \n")
 shared_data = input("Please key in your shared data name: \n")
@@ -15,13 +15,13 @@ num_region = input("How many regions do you circle: \n")
 file = open(program_name)
 klee = open('klee_program.c', 'w')
 whole = open('whole_program.c', 'w')
-
+#path = open('path.c', 'w')
 for line in file:
         if "(" in line:
                 break
         source_line.append(line)
 for line in file:
-        if "(" not in line and "{" not in line and "}" not in line and "+" not in line and "-" not in line and "*" not in line and "/" not in line:
+        if "(" not in line and "{" not in line and "}" not in line and "+" not in line and "-" not in line and "*" not in line and "/" not in line and "return" not in line and shared_data not in line:
                 local_var.append(line)
 file.close()
 
@@ -89,23 +89,45 @@ for j in range(0, len(local_var)):
     whole.write(local_var[j])
 klee.write('klee_make_symbolic(&'+shared_data+', sizeof('+shared_data+'), "'+shared_data+'");\n')
 for k in range(0, len(source_r)):
-        klee.write(source_r[k])
-        whole.write(source_r[k])
+    if "pthread_cond_wait" in source_r[k]:
+        source_r[k] = source_r[k].replace('pthread_cond_wait(&', 'printf ("')
+        source_r[k] = source_r[k].replace(');' , '");')	
+    klee.write(source_r[k])
+    whole.write(source_r[k])
 klee.write('return '+shared_data+'; }\n')
 whole.write('printf("%d", '+shared_data+'); \n')
 whole.write('return '+shared_data+'; }\n')
 klee.close()
 whole.close()
-os.system('clang -Os -S -emit-llvm klee_program.c -o klee_program.ll')
-os.system('clang -Os -S -emit-llvm whole_program.c -o whole_program.ll')
+os.system('clang -S -emit-llvm klee_program.c -o klee_program.ll')
+os.system('clang -S -emit-llvm whole_program.c -o whole_program.ll')
+#os.system('mv whole_program.ll program/')
 os.system('llvm-as klee_program.ll -o klee_program.bc')
-os.system('klee --libc=uclibc --posix-runtime klee_program.bc')
-os.system('klee klee_program.bc')
+#os.system('klee --libc=uclibc --posix-runtime klee_program.bc')
+os.system('klee -search=dfs -write-sym-paths klee_program.bc')
 num = subprocess.getoutput('find klee-last/ -type f |wc -l')
-end = int(num) - 6 + 1
-for i in range(1, end):
+end = (int(num) - 7 + 2) / 2
+for i in range(1, int(end)):
         temp = subprocess.getoutput('ktest-tool --write-ints klee-last/test00000'+str(i)+'.ktest')
         tmp = temp.split()
         ValidInputs.append(tmp[len(tmp)-1])
+#ValidInputs.insert(0, "0")
 print ("valid inputs: ", ValidInputs)
 
+file = open("whole_program.ll", "r")
+for line in file:
+        program.append(line)
+file.close()
+
+for i in range(0, len(ValidInputs)):
+        path = open('path.c', 'w')
+        for j in range(0, len(program)):
+                if shared_data in program[j] and "global" in program[j] and "common" in program[j]:
+                        program[j] = program[j].replace("common global i32 0", "global i32 "+ValidInputs[i]+"")
+                elif shared_data in program[j] and "global" in program[j] and "common" not in program[j]:
+                        program[j] = program[j].replace(""+ValidInputs[i-1]+"", ""+ValidInputs[i]+"")
+                path.write(program[j])
+        os.system('mv path.c path'+str(i+1)+'.c')
+        os.system('clang -S -emit-llvm path'+str(i+1)+'.c -o path'+str(i+1)+'.ll')
+        path.close()
+os.system('mv path* program/')

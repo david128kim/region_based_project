@@ -1,7 +1,8 @@
 import os
 import subprocess
 import string
-
+#import scrapbooking_klee
+#print (scrapbooking_klee.ValidInputs)
 ###############  initialization  ##############################
 temp_testcase, temp_path1 = [], []
 file = open('testcase.ll')
@@ -15,7 +16,7 @@ for line in file:
 path_length = len(temp_path1)
 file.close()
 ###############  start point of scapbooking  ##################
-file = open('whole_program.ll')
+file = open('program/path1.ll')
 scrap = open('answer_ok.ll','w')
 scrapping = []
 for line in file:
@@ -198,7 +199,7 @@ file.close()
 booking.close()
 
 ###########  ending part of scapbooking  ##################
-file = open('whole_program.ll')
+file = open('program/path1.ll')
 scrapbooking = open('answer_ok.ll','a')
 counter_store, counter, temp_cut, cut = 0, 0, 0, 0
 ending, temp_2 = [], []
@@ -218,7 +219,7 @@ for line in file:
 		break
 file.close()
 
-file = open('whole_program.ll')
+file = open('program/path1.ll')
 for line in file:
 	counter += 1
 		

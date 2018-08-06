@@ -32,7 +32,7 @@ info = []
 for i in range(main_flag-r2_flag, -1, -1):
         info.append(info_bottom[i])
 
-#############       loop heuristic reduction    ##############        
+#############       loop heuristic reduction AND printing instead pthread_cond_wait      ##############        
 for i in range(1, len(info)):
         if "{" in info[i]:
                 brackets_match += 1
@@ -47,6 +47,11 @@ for i in range(1, len(info)):
                 if (loop_brackets != []) and (brackets_match == loop_brackets[len(loop_brackets)-1] - 1):
                         loop_end.append(i)
                         loop_brackets.pop()
+        elif "pthread_cond_wait" in info[i]:
+                constrain = info[i].replace('pthread_cond_wait(&', 'printf ("')
+                constrain = constrain.replace(');' , '");')
+                del info[i]
+                info.insert(i, constrain)
 
 #############   eliminate while statement and implement loop heuristic reduction
 loop_end.reverse()
