@@ -30,10 +30,11 @@ for k in range(1, 2):
         counter_t1, t1_insert_number, a_tie, a = 0, 0, [], []
         insert_temp = 0
         for line in file:
-                if "region1" not in line and "region2" not in line: #unnecessary prune
+                if "region1" not in line and "region2" not in line and "printf" not in line and "phi" not in line: #unnecessary prune
                         a.append(line)
                         counter_t1 += 1
-                        if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line) or ("mutex" in line) or ("signal" in line):
+                        if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line):	
+                        #if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line) or ("mutex" in line) or ("signal" in line):
                                 a.insert(counter_t1+t1_insert_number, "tie")
                                 insert_temp += 1
                                 t1_insert_number += 1
@@ -54,13 +55,15 @@ for k in range(1, 2):
         counter_t2, t2_insert_number, b_tie, b = 0, 0, [], []	
         insert_temp = 0
         for line in file:
-                b.append(line)
-                counter_t2 += 1
-                if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line) or ("mutex" in line) or ("signal" in line):
-                        b.insert(counter_t2+t2_insert_number, "tie")
-                        insert_temp += 1
-                        t2_insert_number += 1
-                        end_tie = counter_t2+t2_insert_number
+                if "printf" not in line and "phi" not in line: #unnecessary prune	
+                        b.append(line)
+                        counter_t2 += 1
+                        if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line):
+                        #if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line) or ("mutex" in line) or ("signal" in line):
+                                b.insert(counter_t2+t2_insert_number, "tie")
+                                insert_temp += 1
+                                t2_insert_number += 1
+                                end_tie = counter_t2+t2_insert_number
         del b[end_tie-1]
         t2_insert_number -= 1
         #b.insert(len(b), "tie")
@@ -124,9 +127,10 @@ for k in range(1, 2):
         path_amount = file_length/(len(a)+len(b)-t1_insert_number-t2_insert_number)
         print ("total path amount: ", file_length/(len(a)+len(b)-t1_insert_number-t2_insert_number))
 ####################################################################################################
-for i in range(1, len(scrapbooking_klee.ValidInputs)+1):
-#for i in range(1, 2):
-	while(counter < file_length):
+#for i in range(1, len(scrapbooking_klee.ValidInputs)+1):
+for i in range(1, 2):
+	#while(counter < file_length):
+	while(counter < (len(a)+len(b)-t1_insert_number-t2_insert_number)):
 		generating = open('answer.ll', 'w')
 		for i in range(0,len(a)+len(b)-t1_insert_number-t2_insert_number):
 			recording.append(temp.pop())
@@ -138,7 +142,7 @@ for i in range(1, len(scrapbooking_klee.ValidInputs)+1):
 		#generating.write('  %4 = sext i32 %3 to i64 \n  %5 = inttoptr i64 %4 to i8* \n')
 		#generating.write('  %6 = tail call i32 (i8*, ...)* @printf(i8* %5) #2 \n')
 		#generating.write('  %7 = load i32* @Global, align 4, !tbaa !1 \n')
-		generating.write('  %4 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([3 x i8]* @.str, i64 0, i64 0), i32 %3) #2 \n  %5 = load i32* @Global, align 4, !tbaa !1 \n')
+		#generating.write('  %4 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([3 x i8]* @.str, i64 0, i64 0), i32 %3) #2 \n  %5 = load i32* @Global, align 4, !tbaa !1 \n')
 		generating.close()
 		os.system('python scrapbooking_IR.py')
 		os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')

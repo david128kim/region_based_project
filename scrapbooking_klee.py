@@ -94,17 +94,17 @@ for k in range(0, len(source_r)):
         source_r[k] = source_r[k].replace(');' , '");')	
     klee.write(source_r[k])
     whole.write(source_r[k])
-klee.write('return '+shared_data+'; }\n')
+klee.write('return 0; }\n')
 whole.write('printf("%d", '+shared_data+'); \n')
-whole.write('return '+shared_data+'; }\n')
+whole.write('return 0; }\n')
 klee.close()
 whole.close()
-os.system('clang -S -emit-llvm klee_program.c -o klee_program.ll')
-os.system('clang -S -emit-llvm whole_program.c -o whole_program.ll')
+os.system('clang -Os -S -emit-llvm klee_program.c -o klee_program.ll')
+os.system('clang -Os -S -emit-llvm whole_program.c -o whole_program.ll')
 #os.system('mv whole_program.ll program/')
 os.system('llvm-as klee_program.ll -o klee_program.bc')
 #os.system('klee --libc=uclibc --posix-runtime klee_program.bc')
-os.system('klee -search=dfs -write-sym-paths klee_program.bc')
+os.system('klee -search=dfs -write-kqueries -write-paths klee_program.bc')
 num = subprocess.getoutput('find klee-last/ -type f |wc -l')
 end = (int(num) - 7 + 2) / 2
 for i in range(1, int(end)):
@@ -120,14 +120,14 @@ for line in file:
 file.close()
 
 for i in range(0, len(ValidInputs)):
-        path = open('path.c', 'w')
+        path = open('path.ll', 'w')
         for j in range(0, len(program)):
                 if shared_data in program[j] and "global" in program[j] and "common" in program[j]:
                         program[j] = program[j].replace("common global i32 0", "global i32 "+ValidInputs[i]+"")
                 elif shared_data in program[j] and "global" in program[j] and "common" not in program[j]:
                         program[j] = program[j].replace(""+ValidInputs[i-1]+"", ""+ValidInputs[i]+"")
                 path.write(program[j])
-        os.system('mv path.c path'+str(i+1)+'.c')
-        os.system('clang -S -emit-llvm path'+str(i+1)+'.c -o path'+str(i+1)+'.ll')
+        os.system('mv path.ll path'+str(i+1)+'.ll')
+        #os.system('clang -S -emit-llvm path'+str(i+1)+'.c -o path'+str(i+1)+'.ll')
         path.close()
 os.system('mv path* program/')
