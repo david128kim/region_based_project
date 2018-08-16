@@ -30,7 +30,7 @@ for k in range(1, 2):
         counter_t1, t1_insert_number, a_tie, a = 0, 0, [], []
         insert_temp = 0
         for line in file:
-                if "region1" not in line and "region2" not in line and "printf" not in line and "phi" not in line: #unnecessary prune
+                if "region1" not in line and "region2" not in line and "printf" not in line: #unnecessary prune
                         a.append(line)
                         counter_t1 += 1
                         if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line):	
@@ -55,7 +55,7 @@ for k in range(1, 2):
         counter_t2, t2_insert_number, b_tie, b = 0, 0, [], []	
         insert_temp = 0
         for line in file:
-                if "printf" not in line and "phi" not in line: #unnecessary prune	
+                if "printf" not in line: #unnecessary prune	
                         b.append(line)
                         counter_t2 += 1
                         if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line):
@@ -145,7 +145,17 @@ for i in range(1, 2):
 		#generating.write('  %4 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([3 x i8]* @.str, i64 0, i64 0), i32 %3) #2 \n  %5 = load i32* @Global, align 4, !tbaa !1 \n')
 		generating.close()
 		os.system('python scrapbooking_IR.py')
-		os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
+		temp_filter = subprocess.getoutput('python filter.py')
+		if "inexistent" in temp_filter:
+			continue
+		else:
+			temp_llc = subprocess.getoutput('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
+			if "error" in temp_llc:
+				print ("error at number of file, and its cause: ", flag, temp_llc)
+				break
+			
+		'''
+		#os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
 		os.system('gcc -o answer_ok answer_ok.s -lpthread')
 		#os.system('./answer_ok')
 		exe_result = subprocess.getoutput('./answer_ok \n')
@@ -158,6 +168,7 @@ for i in range(1, 2):
 			temp_result = exe_result
 			print ("last: ", temp_result)
 		#os.system('rm -r klee-last && rm -r klee-out-* && rm answer*')
+		'''
 		flag += 1
 		recording = []
 		file_length -= (len(a)+len(b)-t1_insert_number-t2_insert_number)

@@ -3,6 +3,18 @@ import subprocess
 import string
 #import scrapbooking_klee
 #print (scrapbooking_klee.ValidInputs)
+
+def replaceIR(instruction_list, new_list):
+	instruction_list.pop()
+	instruction_list.append(new_list)
+	new_list = ""
+
+def splitIR(original_line, temp_line, line_split):
+	temp_line = original_line
+	print ("temp_r: ", temp_line)
+	line_split = temp_line.split()
+	print ("split: ", line_split)
+
 ###############  initialization  ##############################
 temp_testcase, temp_path1 = [], []
 file = open('testcase.ll')
@@ -35,26 +47,33 @@ scrap.close()
 #################  1st time replacing part #####################
 file = open('answer.ll')
 booking = open('answer_o.ll','a')
-counter_ins, counter_load, before_1stBB, counter_temp, counter_call, label_point, counter_store = 0, 1, 0, -1, 0, 0, 0
+counter_ins, counter_load, before_1stBB, counter_temp, counter_call, label_point, phi_point, counter_store, opening_load = 0, 1, 0, -1, 0, 0, 0, 0, 0
 load_number, operation_name, assert_answer, temp = "", "", "", ""
-instruction, label, re_instruction = [], [], []
+instruction, label, re_instruction, cmp_point = [], [], [], []
 
 for line in file:
 	if "load" in line:
 		counter_ins += 1
+		if opening_load == 0:
+			opening_load = counter_ins
 		instruction.append(line)
 		temp = line
 		temp_1 = temp.split()
 		load_number = str(temp_1[0])
 		temp = temp.replace(str(load_number), "%"+str(counter_ins))
+		"""
 		instruction.pop()
 		instruction.append(temp)
 		temp = ""
+		"""
+		replaceIR(instruction, temp)
+		before_1stBB = 1	##### special case to increase program counter
+
 	elif ("store" in line):
 		if before_1stBB == 0:
 			counter_ins += 1
-		else:
-			counter_store += 1
+		#else:
+			#counter_store += 1
 		instruction.append(line)
 		temp = line
 		temp_assert_answer = temp.split()
@@ -69,8 +88,11 @@ for line in file:
 				i += 1
 		else:
 			temp = temp.replace(str(assert_answer), str(operation_name)+',')
+		'''
 		instruction.pop()
 		instruction.append(temp)
+		'''
+		replaceIR(instruction, temp)
 	elif ("call" in line):
 		counter_ins += 1
 		instruction.append(line)
@@ -91,9 +113,11 @@ for line in file:
 		else:
 			temp = temp.replace(str(load_number), str(operation_name))
 		'''
+		'''
 		instruction.pop()
 		instruction.append(temp)
-
+		'''
+		replaceIR(instruction, temp)
 	else:
 		instruction.append(line)
 		if "=" not in line and "%" not in line:
@@ -106,27 +130,66 @@ for line in file:
 				#print (temp_split[1])
 				if temp_split[1] == 'label':
 					temp = temp.replace(str(temp_split[2]), '%'+str(counter_ins))
-					instruction.pop()
-					instruction.append(temp)
-					temp = ""
+					replaceIR(instruction, temp)
 				else:						
 					temp = temp.replace(str(temp_split[2]), '%'+str(counter_ins-1)+',')
-					instruction.pop()
-					instruction.append(temp)
-					temp = ""
+					replaceIR(instruction, temp)
 			else:
 				temp = line
 				temp_split = line.split()
 				temp = temp.replace(str(temp_split[1]), '<label>:'+str(counter_ins)+':')
-				instruction.pop()
-				instruction.append(temp)
-				temp = ""
+				replaceIR(instruction, temp)
 				label.append(counter_ins)
 				before_1stBB = 1
 			continue
+		elif "phi" in line:							################ phi instruction (ex:%8 = phi i32 [ %7, %5 ], [ 0, %2 ]): format of [ %7, %5 ] => [ BB last line -1, label ]  #################
+			counter_ins += 1
+			
+			temp = line
+			temp_split = line.split()
+			
+			load_number = str(temp_split[0])
+			temp = temp.replace(str(load_number), "%"+str(counter_ins), 1)
+			replaceIR(instruction, temp)
+			
+			for i in range(0, len(label)):
+				if counter_ins - 1 == label[i]:
+					label_point = i - 1
+			if label[label_point+1]-1 in cmp_point:
+				temp = temp.replace(temp_split[5], "%"+str(label[label_point+1]-2)+',')
+			else:
+				temp = temp.replace(temp_split[5], "%"+str(label[label_point+1]-1)+',')
+			replaceIR(instruction, temp)
+			temp = temp.replace(temp_split[6], "%"+str(label[label_point]))
+			temp_split = temp.split()
+			if str(temp_split[5]) == str(temp_split[6])+',':
+				temp = temp.replace(temp_split[5], "%"+str(label[label_point]-3)+',')
+				temp = temp.replace(temp_split[6]+' ]', "%"+str(label[label_point-2])+' ]')
+			replaceIR(instruction, temp)
+			if len(label) > 2:
+				if label[label_point]-1 in cmp_point:
+					#print ("temp3: ", temp)
+					temp = temp.replace('[ '+temp_split[9], "[ %"+str(label[label_point]-2)+',')
+					#print ("temp4: ", temp)
+				else:
+					temp = temp.replace(temp_split[9], "%"+str(label[label_point]-1)+',')
+				replaceIR(instruction, temp)
+				temp = temp.replace(temp_split[10]+' ]', "%"+str(label[label_point-1])+' ]')
+				temp_split = temp.split()
+				if str(temp_split[9]) == str(temp_split[10])+',':
+					temp = temp.replace(temp_split[9], "%"+str(label[label_point]-3)+',')
+					temp = temp.replace(temp_split[10]+' ]', "%"+str(label[label_point-2])+' ]')	
+			else:
+				temp = temp.replace(temp_split[9], "%"+str(cmp_point[0]-1)+',')
+				replaceIR(instruction, temp)
+				temp = temp.replace(temp_split[10], "%"+str(opening_load-1))
+			replaceIR(instruction, temp)
+
 		else:
 			counter_ins += 1
 			temp = line
+			if "cmp" in line:
+				cmp_point.append(counter_ins)
 			temp_1 = temp.split()
 			load_number = str(temp_1[0])
 			temp = temp.replace(str(load_number), "%"+str(counter_ins))
@@ -140,39 +203,31 @@ for line in file:
 						if "sext" in line or "inttoptr" in line:
 							temp = temp.replace(str(load_number), "%"+str(counter_ins-1))
 							break
-						else:	
-							#print (instruction[counter_ins-2])
-							if "label" in instruction[counter_ins-1]:
-								print ("???, ", temp)
-								#temp = temp.replace(str(load_number), "%"+str(counter_ins-2)+",")
-							else:
-								temp = temp.replace(str(load_number), "%"+str(counter_ins-1)+",")
+						else:
+							temp = temp.replace(str(load_number), "%"+str(counter_ins-1)+",")
 							break
 					i += 1
 			else:
 				temp = temp.replace(str(load_number), "%"+str(counter_ins-1)+",")
 			temp_1 = temp.split()
 			operation_name = str(temp_1[0])
-			instruction.pop()
-			instruction.append(temp)
-			temp = ""
+			replaceIR(instruction, temp)
 file.close()
 for i in range(0, len(instruction)):
 	booking.write(instruction[i])
 booking.close()
 
 ############  2nd time replacing part  ####################
-#print ("label: ", label)
+label_point = 0
 file = open('answer_o.ll','r')
 scrapbooking = open('answer_ok.ll','w')
 for line in file:
 	temp = line
 	temp_split = temp.split()
-	#print ("there")
-	if "br" in line and temp_split[1] != 'label':
-		#print (temp_split)
-		temp = temp.replace(str(temp_split[4]), '%'+str(label[label_point])+',')
-		temp = temp.replace(str(temp_split[6]), '%'+str(label[label_point+1]))
+	if "br" in line and temp_split[1] != 'label':				#############  br i1 %14, label %15, label %18  #############
+		temp = temp.replace('label '+str(temp_split[6])+'', 'label %'+str(label[label_point+1]))
+		temp = temp.replace('label '+str(temp_split[4]), 'label %'+str(label[label_point])+',')
+		#print (temp)
 		label_point += 2
 		re_instruction.append(temp)
 	else:
