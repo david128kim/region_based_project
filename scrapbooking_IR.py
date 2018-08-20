@@ -47,9 +47,9 @@ scrap.close()
 #################  1st time replacing part #####################
 file = open('answer.ll')
 booking = open('answer_o.ll','a')
-counter_ins, counter_load, before_1stBB, counter_temp, counter_call, label_point, phi_point, counter_store, opening_load = 0, 1, 0, -1, 0, 0, 0, 0, 0
+counter_ins, counter_load, before_1stBB, counter_temp, counter_call, label_point, phi_point, counter_store, opening_load, counter_re = 0, 1, 0, -1, 0, 0, 0, 0, 0, -1
 load_number, operation_name, assert_answer, temp = "", "", "", ""
-instruction, label, re_instruction, cmp_point = [], [], [], []
+instruction, label, re_instruction, cmp_point, br_label, br_value = [], [], [], [], [], []
 
 for line in file:
 	if "load" in line:
@@ -151,7 +151,7 @@ for line in file:
 			load_number = str(temp_split[0])
 			temp = temp.replace(str(load_number), "%"+str(counter_ins), 1)
 			replaceIR(instruction, temp)
-			
+			'''
 			for i in range(0, len(label)):
 				if counter_ins - 1 == label[i]:
 					label_point = i - 1
@@ -184,7 +184,7 @@ for line in file:
 				replaceIR(instruction, temp)
 				temp = temp.replace(temp_split[10], "%"+str(opening_load-1))
 			replaceIR(instruction, temp)
-
+			'''
 		else:
 			counter_ins += 1
 			temp = line
@@ -222,6 +222,7 @@ label_point = 0
 file = open('answer_o.ll','r')
 scrapbooking = open('answer_ok.ll','w')
 for line in file:
+	counter_re += 1
 	temp = line
 	temp_split = temp.split()
 	if "br" in line and temp_split[1] != 'label':				#############  br i1 %14, label %15, label %18  #############
@@ -230,6 +231,42 @@ for line in file:
 		#print (temp)
 		label_point += 2
 		re_instruction.append(temp)
+	elif "phi" in line:			################ phi instruction (ex:%8 = phi i32 [ %7, %5 ], [ 0, %2 ]): format of [ %7, %5 ] => [ BB last line -1, label ]  #################
+		for i in range(counter_re-1, 0, -1):
+			if 'label %'+str(int(temp_split[0].strip('%'))-1) in str(re_instruction[i]):
+				#print ("ins[i]: ", re_instruction[i])
+				for j in range(i-1, 0, -1):
+					if "cmp" not in re_instruction[j] and "=" in re_instruction[j]:
+						#print ("ins[j]: ", re_instruction[j])
+						temp_value = re_instruction[j].split()
+						br_value.append(temp_value[0]) 
+						break
+				for j in range(i-1, 0, -1):
+					if "; <label>" in re_instruction[j]:
+						temp_label = re_instruction[j].split()
+						br_label.append(temp_label[1].lstrip('; <label>:').rstrip(':'))
+						break	
+		#print ("brv: ", br_value)
+		#print ("brl: ", br_label)
+		if len(br_label) < len(br_value):
+			br_label.append(str(opening_load-1))
+		temp = temp.replace(temp_split[5], str(br_value[0])+',')
+		temp = temp.replace(temp_split[6]+' ]', "%"+str(br_label[0])+' ]')
+		'''
+		if str(temp_split[5]) == str(temp_split[6])+',':
+			temp = temp.replace(temp_split[5], "%"+str(label[label_point]-3)+',')
+			temp = temp.replace(temp_split[6]+' ]', "%"+str(label[label_point-2])+' ]')
+		'''
+		temp = temp.replace('[ '+temp_split[9], "[ "+str(br_value[1])+',')
+		temp = temp.replace(temp_split[10]+' ]', "%"+str(br_label[1])+' ]')
+
+		for i in range(0, len(br_value)):
+			br_value.pop()
+			br_label.pop()
+
+				
+
+		re_instruction.append(temp)	
 	else:
 		re_instruction.append(line)
 file.close()

@@ -152,6 +152,7 @@ for i in range(1, 2):
 			temp_llc = subprocess.getoutput('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
 			if "error" in temp_llc:
 				print ("error at number of file, and its cause: ", flag, temp_llc)
+				temp_error += 1
 				break
 			
 		'''
@@ -173,4 +174,5 @@ for i in range(1, 2):
 		recording = []
 		file_length -= (len(a)+len(b)-t1_insert_number-t2_insert_number)
 		print ("verifying path",flag-1)
-	#os.system('rm testcase.ll')	
+	#os.system('rm testcase.ll')
+print ("error number: ", temp_error)
