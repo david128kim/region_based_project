@@ -47,12 +47,13 @@ for i in range(1, len(info)):
                 if (loop_brackets != []) and (brackets_match == loop_brackets[len(loop_brackets)-1] - 1):
                         loop_end.append(i)
                         loop_brackets.pop()
+'''
         elif "pthread_cond_wait" in info[i]:
                 constrain = info[i].replace('pthread_cond_wait(&', 'printf ("')
                 constrain = constrain.replace(');' , '");')
                 del info[i]
                 info.insert(i, constrain)
-
+'''
 #############   eliminate while statement and implement loop heuristic reduction
 loop_end.reverse()
 info_length = len(info)

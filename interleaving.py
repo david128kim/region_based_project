@@ -20,7 +20,7 @@ strwrite = "generate feasible testcase: "
 #test region
 constraints = [[1, 2], [3, 4], [5, 6]]
 recording, filetest, a_tie, b_tie = [] ,[], [], []
-counter, path_amount, file_length, temp_exe_result = 0, 0, 0, 0
+counter, path_amount, file_length, temp_exe_result, counter_DL = 0, 0, 0, 0, 0
 
 for k in range(1, 2):
         #testcase = open('testcase'+str(k)+'.ll','w')
@@ -130,7 +130,7 @@ for k in range(1, 2):
 #for i in range(1, len(scrapbooking_klee.ValidInputs)+1):
 for i in range(1, 2):
 	#while(counter < file_length):
-	while(counter < (len(a)+len(b)-t1_insert_number-t2_insert_number)):
+	while(counter <= (len(a)+len(b)-t1_insert_number-t2_insert_number)):
 		generating = open('answer.ll', 'w')
 		for i in range(0,len(a)+len(b)-t1_insert_number-t2_insert_number):
 			recording.append(temp.pop())
@@ -144,15 +144,18 @@ for i in range(1, 2):
 		#generating.write('  %7 = load i32* @Global, align 4, !tbaa !1 \n')
 		#generating.write('  %4 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([3 x i8]* @.str, i64 0, i64 0), i32 %3) #2 \n  %5 = load i32* @Global, align 4, !tbaa !1 \n')
 		generating.close()
+		
 		os.system('python scrapbooking_IR.py')
+		
 		temp_filter = subprocess.getoutput('python filter.py')
-		if "inexistent" in temp_filter:
-			continue
+		if "deadlock" in temp_filter:
+			counter_DL += 1
+			print ("error "+str(flag)+" : "+str(temp_filter)+" accumulated error: "+str(counter_DL))
+			#continue
 		else:
 			temp_llc = subprocess.getoutput('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
 			if "error" in temp_llc:
 				print ("error at number of file, and its cause: ", flag, temp_llc)
-				temp_error += 1
 				break
 			
 		'''
@@ -175,4 +178,4 @@ for i in range(1, 2):
 		file_length -= (len(a)+len(b)-t1_insert_number-t2_insert_number)
 		print ("verifying path",flag-1)
 	#os.system('rm testcase.ll')
-print ("error number: ", temp_error)
+print ("deadlock(DL) number: ", counter_DL)

@@ -93,31 +93,17 @@ for line in file:
 		instruction.append(temp)
 		'''
 		replaceIR(instruction, temp)
-	elif ("call" in line):
+	elif ("call" in line) and ("pthread_cond" not in line):
+			
 		counter_ins += 1
 		instruction.append(line)
 		temp = line
 		temp_1 = temp.split()
 		load_number = str(temp_1[0])
 		temp = temp.replace(str(load_number), "%"+str(counter_ins))
-		'''
-		load_number = str(temp_1[2])
-		if "%" not in load_number:
-			i = 3
-			while ("%" not in load_number) and (i < len(temp_1)-1) :
-				load_number = str(temp_1[i])
-				if "%" in load_number:
-					temp = temp.replace(str(load_number), str(operation_name)+')')
-					break
-				i += 1
-		else:
-			temp = temp.replace(str(load_number), str(operation_name))
-		'''
-		'''
-		instruction.pop()
-		instruction.append(temp)
-		'''
 		replaceIR(instruction, temp)
+	elif ("call" in line) and ("pthread_cond" in line):
+		continue
 	else:
 		instruction.append(line)
 		if "=" not in line and "%" not in line:
@@ -151,40 +137,6 @@ for line in file:
 			load_number = str(temp_split[0])
 			temp = temp.replace(str(load_number), "%"+str(counter_ins), 1)
 			replaceIR(instruction, temp)
-			'''
-			for i in range(0, len(label)):
-				if counter_ins - 1 == label[i]:
-					label_point = i - 1
-			if label[label_point+1]-1 in cmp_point:
-				temp = temp.replace(temp_split[5], "%"+str(label[label_point+1]-2)+',')
-			else:
-				temp = temp.replace(temp_split[5], "%"+str(label[label_point+1]-1)+',')
-			replaceIR(instruction, temp)
-			temp = temp.replace(temp_split[6], "%"+str(label[label_point]))
-			temp_split = temp.split()
-			if str(temp_split[5]) == str(temp_split[6])+',':
-				temp = temp.replace(temp_split[5], "%"+str(label[label_point]-3)+',')
-				temp = temp.replace(temp_split[6]+' ]', "%"+str(label[label_point-2])+' ]')
-			replaceIR(instruction, temp)
-			if len(label) > 2:
-				if label[label_point]-1 in cmp_point:
-					#print ("temp3: ", temp)
-					temp = temp.replace('[ '+temp_split[9], "[ %"+str(label[label_point]-2)+',')
-					#print ("temp4: ", temp)
-				else:
-					temp = temp.replace(temp_split[9], "%"+str(label[label_point]-1)+',')
-				replaceIR(instruction, temp)
-				temp = temp.replace(temp_split[10]+' ]', "%"+str(label[label_point-1])+' ]')
-				temp_split = temp.split()
-				if str(temp_split[9]) == str(temp_split[10])+',':
-					temp = temp.replace(temp_split[9], "%"+str(label[label_point]-3)+',')
-					temp = temp.replace(temp_split[10]+' ]', "%"+str(label[label_point-2])+' ]')	
-			else:
-				temp = temp.replace(temp_split[9], "%"+str(cmp_point[0]-1)+',')
-				replaceIR(instruction, temp)
-				temp = temp.replace(temp_split[10], "%"+str(opening_load-1))
-			replaceIR(instruction, temp)
-			'''
 		else:
 			counter_ins += 1
 			temp = line
