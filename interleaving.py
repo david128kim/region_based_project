@@ -33,7 +33,8 @@ for k in range(1, 2):
                 if "region1" not in line and "region2" not in line and "printf" not in line: #unnecessary prune
                         a.append(line)
                         counter_t1 += 1
-                        if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line):	
+                        if ("mutex" in line) or ("signal" in line) or ("wait" in line):
+                        #if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line):	
                         #if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line) or ("mutex" in line) or ("signal" in line):
                                 a.insert(counter_t1+t1_insert_number, "tie")
                                 insert_temp += 1
@@ -58,7 +59,8 @@ for k in range(1, 2):
                 if "printf" not in line: #unnecessary prune	
                         b.append(line)
                         counter_t2 += 1
-                        if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line):
+                        if ("mutex" in line) or ("signal" in line) or ("wait" in line):
+                        #if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line):
                         #if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line) or ("mutex" in line) or ("signal" in line):
                                 b.insert(counter_t2+t2_insert_number, "tie")
                                 insert_temp += 1

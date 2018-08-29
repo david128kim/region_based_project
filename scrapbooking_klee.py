@@ -123,7 +123,7 @@ for i in range(0, len(ValidInputs)):
         path = open('path.ll', 'w')
         for j in range(0, len(program)):
                 if shared_data in program[j] and "global" in program[j] and "common" in program[j]:
-                        program[j] = program[j].replace("common global i32 0", "global i32 "+ValidInputs[i]+"")
+                        program[j] = program[j].replace("common local_unnamed_addr global i32 0", "global i32 "+ValidInputs[i]+"")
                 elif shared_data in program[j] and "global" in program[j] and "common" not in program[j]:
                         program[j] = program[j].replace(""+ValidInputs[i-1]+"", ""+ValidInputs[i]+"")
                 path.write(program[j])
