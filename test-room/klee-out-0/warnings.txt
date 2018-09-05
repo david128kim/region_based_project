@@ -1,0 +1,4 @@
+KLEE: WARNING: undefined reference to function: printf
+KLEE: WARNING: undefined reference to function: pthread_cond_signal
+KLEE: WARNING ONCE: calling external: printf(11406672, 0) at [no debug info]
+KLEE: WARNING ONCE: calling external: pthread_cond_signal(11399440) at [no debug info]

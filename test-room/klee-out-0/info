@@ -1,0 +1,18 @@
+klee -search=dfs -write-kqueries -write-paths region1.bc
+PID: 3230
+Started: 2018-09-05 13:16:58
+BEGIN searcher description
+DFSSearcher
+END searcher description
+Finished: 2018-09-05 13:16:59
+Elapsed: 00:00:01
+KLEE: done: explored paths = 4
+KLEE: done: avg. constructs per query = 13
+KLEE: done: total queries = 4
+KLEE: done: valid queries = 0
+KLEE: done: invalid queries = 4
+KLEE: done: query cex = 4
+
+KLEE: done: total instructions = 55
+KLEE: done: completed paths = 4
+KLEE: done: generated tests = 4
