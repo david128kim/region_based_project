@@ -85,6 +85,7 @@ tree.add_node(info[treeID])
 #############       construct tree and path condition   ########## 
 for i  in range(1, len(info)):
         info[i] = info[i] + "/*R1 line:" + str(treeID) + "*/"
+        #print (info[i])
         if (("if" in info[i]) and ("else" not in info[i])):
                 brackets_match += 1
                 cond_num.append(brackets_match)
@@ -204,7 +205,6 @@ for i  in range(1, len(info)):
                                 branch_leaf.append(i)
 #        info[i] = info[i] + " //R1 line:" + str(treeID)       
         treeID += 1
-
 ###########     record every branch type    ############
 #for i in range(1, len(info)):
 #        if "if" in info[i] and "else" not in info[i]:

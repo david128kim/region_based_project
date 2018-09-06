@@ -7,8 +7,8 @@ import string
 import app_r1
 import app_r2
 
-ValidInputs, source_line, source_r, ir_line, local_var, program = [], [], [], [], [], []
-region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+ValidInputs, source_line, source_r, ir_line, local_var, program, source_path, ins, kquery, exe_path, exe_r1_path, exe_r2_path = [], [], [], [], [], [], [], [], [], [], [], []
+region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region, k_point, appendable = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
 program_name = input("Please key in your program name: \n")
 shared_data = input("Please key in your shared data name: \n")
 num_region = input("How many regions do you circle: \n")
@@ -38,6 +38,7 @@ for i in range(1, int(num_region)+1):
             region.write(line)
     region.write('return 0;\n}')
     region.close()
+    os.system('mv region'+str(i)+'.c exe_source/')
 ########################################################################
 #region = open('region'+str(num_region)+'.c', 'w')
 #for k in range(0, len(source_line)):
@@ -50,9 +51,13 @@ for i in range(1, int(num_region)+1):
 #region.close()
 #file.close()
 
+
+
+'''
 for i in range(1, int(num_region)+1):
     os.system('clang -Os -S -emit-llvm region'+str(i)+'.c -o region'+str(i)+'.ll')
     os.system('mv region'+str(i)+'.ll exe_IR/')
+    os.system('mv region'+str(i)+'.c exe_source/')
 #######################################################################
 for i in range(1, int(num_region)+1):
     ir_line =[]
@@ -72,12 +77,15 @@ for i in range(1, int(num_region)+1):
     region.close()
 sequential.close()
 os.system('mv concurrent_program.ll exe_concurrent/')
+'''
+
+
 
 region = open("region_text/p-c.txt", 'r')
 for line in region:
     if "region" not in line:
         source_r.append(line)
-
+'''
 klee.write('#include "klee/klee.h"\n')
 for k in range(0, len(source_line)):
     klee.write(source_line[k])
@@ -110,10 +118,100 @@ end = (int(num) - 7 + 2) / 2
 for i in range(1, int(end)):
         temp = subprocess.getoutput('ktest-tool --write-ints klee-last/test00000'+str(i)+'.ktest')
         tmp = temp.split()
-        ValidInputs.append(tmp[len(tmp)-1])
+        if "found" not in tmp:
+                ValidInputs.append(tmp[len(tmp)-1])
+#ValidInputs.insert(0, "0")
+print ("valid inputs: ", ValidInputs)
+'''
+#os.chdir('exe_source')
+#os.system('ls')
+dy_path = open("Itrigger.c", "w")
+for j in range(0, len(source_line)):
+        dy_path.write(source_line[j])
+#dy_path.write(shared_data+' = '+ValidInputs[3]+';\n')
+dy_path.write('int main(int argc, char **argv) {\n')
+for k in range(0, len(local_var)):
+        dy_path.write(local_var[k])
+dy_path.write('klee_make_symbolic(&'+shared_data+', sizeof('+shared_data+'), "'+shared_data+'");\n')
+for i in range(0, int(num_region)):						##### two region: need to be dynamic (ex: find r?_path.c number) #####
+	file = open("r"+str(i+1)+"_path.c")
+	dy_path = open("Itrigger.c", "a")
+	for line in file:
+		source_path.append(line)
+	for l in range(0, len(source_path)):
+		if "pthread_cond_wait" in source_path[l]:
+			source_path[l] = source_path[l].replace('pthread_cond_wait(&', 'printf ("')
+			source_path[l] = source_path[l].replace(');' , 'wait");')
+		dy_path.write(source_path[l])
+	source_path = []
+dy_path.write('return 0; }\n')
+dy_path.close()
+os.system('clang -Os -S -emit-llvm Itrigger.c -o Itrigger.ll')
+os.system('llvm-as Itrigger.ll -o Itrigger.bc')
+os.system('klee -search=dfs -write-paths Itrigger.bc')
+num = subprocess.getoutput('find klee-last/ -type f |wc -l')
+end = (int(num) - 7 + 2) / 2
+print (end)
+for i in range(1, int(end)):
+        temp = subprocess.getoutput('ktest-tool --write-ints klee-last/test00000'+str(i)+'.ktest')
+        tmp = temp.split()
+        if "found" not in tmp:
+                ValidInputs.append(tmp[len(tmp)-1])
 #ValidInputs.insert(0, "0")
 print ("valid inputs: ", ValidInputs)
 
+file = open('Itrigger.c')
+for line in file:
+        ins.append(line)
+file.close()
+p_num = subprocess.getoutput('find klee-last/ -name *.path -type f |wc -l')
+for i in range(1, int(p_num)+1):
+        file = open('klee-last/test00000'+str(i)+'.path')
+        for line in file:
+                kquery.append(line)
+        file.close()
+        for j in range(0, len(ins)):
+                if "num" in ins[j] and "if" in ins[j]:
+                        if "0" in kquery[k_point]:
+                                appendable = 0
+                        k_point += 1
+                elif "}" in ins[j]:
+                        appendable = 1
+
+                if appendable == 1 and "}" not in ins[j] and "if" not in ins[j]:
+                        exe_path.append(ins[j])
+                        #print (ins[j])
+                else:
+                        continue
+        path = open("path_r1.c", "w")
+        for j in range(0, len(exe_path)):
+                if "wait" in exe_path[j]:
+                        print ("777")
+                        exe_path[j] = exe_path[j].replace('printf ("', 'pthread_cond_wait(&')
+                        exe_path[j] = exe_path[j].replace('wait");', ');')
+                path.write(exe_path[j])
+        path.write('return 0;\n}')
+        path.close()
+        os.system('mv path.c program/path_'+str(i)+'.c')
+        k_point = 0
+        kquery = []
+        exe_path = []
+
+file = open('program/path_2.c')
+for line in file:
+        if "R1" in line:
+                exe_r1_path.append(line)
+        elif "R2" in line:
+                exe_r2_path.append(line)
+        else:
+                exe_r1_path.append(line)
+                exe_r2_path.append(line)
+
+for i in range(1 , int(num_region)+1):
+        executions = open("region_exe_r"+str(i)+".c", "w")
+        #for j in range(0 , len()):
+	
+'''
 file = open("whole_program.ll", "r")
 for line in file:
         program.append(line)
@@ -131,3 +229,4 @@ for i in range(0, len(ValidInputs)):
         #os.system('clang -S -emit-llvm path'+str(i+1)+'.c -o path'+str(i+1)+'.ll')
         path.close()
 os.system('mv path* program/')
+'''
