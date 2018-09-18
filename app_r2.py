@@ -9,7 +9,7 @@ from tree import Tree
 
 tree = Tree()
 
-file = open("region_text/p-c.txt")
+file = open("region_text/deadlock.txt")
 region_path = open("r2_path.c", "w")
 treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r2, counter_bp = 0, 0, 0, 0, 0, 0, 0
 info, info_bottom, branch_layer, branch_point, branch_leaf, breakpoint, dfs, cond_num, if_layer, branch_type = [], [], [], [], [], [], [], [], [], []
@@ -69,9 +69,13 @@ for i in range(len(loop_start)-1, -1, -1):
 ##                print ("loop_body: ", loop_body)
 #        temp_body = temp_body * 2
         temp_i = loop_start[i] + 1
-        for j in range(0, len(temp_body)):
-                info.insert(temp_i, temp_body[j])
-                temp_i += 1
+        if "pthread_cond" in temp_body[0]:
+                #print ("+++++++")
+                break
+        else:
+                for j in range(0, len(temp_body)):
+                        info.insert(temp_i, temp_body[j])
+                        temp_i += 1
        
         gap = len(info) - info_length
         temp_body = []
@@ -79,7 +83,8 @@ for i in range(len(loop_start)-1, -1, -1):
 
 tree.add_node(info[treeID])
 for i  in range(1, len(info)):
-        info[i] = info[i] + "/*R2 line:" + str(treeID) + "*/"
+        #info[i] = info[i] + "/*R2 line:" + str(treeID) + "*/"
+        info[i] = "/*R2 line:" + str(treeID) + "*/" + info[i]
         if (("if" in info[i]) and ("else" not in info[i])):
                 brackets_match += 1
                 cond_num.append(brackets_match)

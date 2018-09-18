@@ -31,12 +31,15 @@ file.close()
 file = open('program/path1.ll')
 scrap = open('answer_o.ll','w')
 scrapping = []
+start_counter = 0
 for line in file:
 	if "define" in line:
 		scrapping.append(line)
 		break
 	else:
 		scrapping.append(line)
+		if "common local_unnamed_addr" in line or "common global" in line:
+			start_counter += 1
 
 for i in range(0, len(scrapping)):
 	scrap.write(scrapping[i])
@@ -50,12 +53,12 @@ booking = open('answer_o.ll','a')
 counter_ins, counter_load, before_1stBB, counter_temp, counter_call, label_point, phi_point, counter_store, opening_load, counter_re = 0, 1, 0, -1, 0, 0, 0, 0, 0, -1
 load_number, operation_name, assert_answer, temp = "", "", "", ""
 instruction, label, re_instruction, cmp_point, br_label, br_value = [], [], [], [], [], []
-
+counter_ins += start_counter 
 for line in file:
 	if "load" in line:
 		counter_ins += 1
-		if opening_load == 0:
-			opening_load = counter_ins
+		#if opening_load == 0:
+			#opening_load = counter_ins
 		instruction.append(line)
 		temp = line
 		temp_1 = temp.split()
@@ -67,13 +70,13 @@ for line in file:
 		temp = ""
 		"""
 		replaceIR(instruction, temp)
-		before_1stBB = 1	##### special case to increase program counter
+		#before_1stBB = 1	##### special case to increase program counter
 
 	elif ("store" in line):
-		if before_1stBB == 0:
-			counter_ins += 1
+		#if before_1stBB == 0:
+			#counter_ins += 1
 		#else:
-			#counter_store += 1
+		counter_store += 1
 		instruction.append(line)
 		temp = line
 		temp_assert_answer = temp.split()
@@ -102,6 +105,8 @@ for line in file:
 		load_number = str(temp_1[0])
 		temp = temp.replace(str(load_number), "%"+str(counter_ins))
 		replaceIR(instruction, temp)
+		
+		#before_1stBB = 1							############## special reason about local variable initialization ##############
 	elif ("call" in line) and ("pthread_cond" in line):
 		continue
 	else:

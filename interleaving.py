@@ -39,7 +39,12 @@ for k in range(1, 2):
                                 a.insert(counter_t1+t1_insert_number, "tie")
                                 insert_temp += 1
                                 t1_insert_number += 1
-                                end_tie = counter_t1+t1_insert_number	
+                                end_tie = counter_t1+t1_insert_number
+#                        elif scrapbooking_klee.shared_data in line and (("mutex" not in line) or ("signal" not in line) or ("wait" not in line)):
+#                                a.insert(counter_t1+t1_insert_number, "tie")
+#                                insert_temp += 1
+#                                t1_insert_number += 1
+#                                end_tie = counter_t1+t1_insert_number	
                 elif "region2" in line:
                        break
         del a[end_tie-1]
@@ -66,6 +71,11 @@ for k in range(1, 2):
                                 insert_temp += 1
                                 t2_insert_number += 1
                                 end_tie = counter_t2+t2_insert_number
+#                        elif scrapbooking_klee.shared_data in line and (("mutex" not in line) or ("signal" not in line) or ("wait" not in line)):
+#                                b.insert(counter_t2+t2_insert_number, "tie")
+#                                insert_temp += 1
+#                                t2_insert_number += 1
+#                                end_tie = counter_t2+t2_insert_number
         del b[end_tie-1]
         t2_insert_number -= 1
         #b.insert(len(b), "tie")
@@ -135,11 +145,18 @@ for i in range(1, 2):
 	while(counter <= (len(a)+len(b)-t1_insert_number-t2_insert_number)):
 		generating = open('answer.ll', 'w')
 		for i in range(0,len(a)+len(b)-t1_insert_number-t2_insert_number):
-			recording.append(temp.pop())
+			if not temp:
+				print ("temp is empty. ")
+				break
+			else:
+				recording.append(temp.pop())
 			counter += 1
 		if counter == (len(a)+len(b)-t1_insert_number-t2_insert_number):
 			counter = 0
 		for i in range(len(a)+len(b)-t1_insert_number-t2_insert_number-1, -1, -1):
+			#if "store" in recording[i] and scrapbooking_klee.shared_data not in recording[i]:
+				#continue
+			#else:
 			generating.write(recording[i])
 		#generating.write('  %4 = sext i32 %3 to i64 \n  %5 = inttoptr i64 %4 to i8* \n')
 		#generating.write('  %6 = tail call i32 (i8*, ...)* @printf(i8* %5) #2 \n')
@@ -160,11 +177,11 @@ for i in range(1, 2):
 				print ("error at number of file, and its cause: ", flag, temp_llc)
 				break
 			
-		'''
+		
 		#os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
 		os.system('gcc -o answer_ok answer_ok.s -lpthread')
-		#os.system('./answer_ok')
-		exe_result = subprocess.getoutput('./answer_ok \n')
+		#os.system('timeout 3 ./answer_ok')
+		exe_result = subprocess.getoutput('timeout 3 ./answer_ok \n')
 		#temp_result = exe_result
 		if (flag > 1) and (temp_result != exe_result):
 			print ("now: ", exe_result)
@@ -174,7 +191,7 @@ for i in range(1, 2):
 			temp_result = exe_result
 			print ("last: ", temp_result)
 		#os.system('rm -r klee-last && rm -r klee-out-* && rm answer*')
-		'''
+		
 		flag += 1
 		recording = []
 		file_length -= (len(a)+len(b)-t1_insert_number-t2_insert_number)

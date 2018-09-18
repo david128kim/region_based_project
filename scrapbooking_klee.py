@@ -51,37 +51,7 @@ for i in range(1, int(num_region)+1):
 #region.close()
 #file.close()
 
-
-
-'''
-for i in range(1, int(num_region)+1):
-    os.system('clang -Os -S -emit-llvm region'+str(i)+'.c -o region'+str(i)+'.ll')
-    os.system('mv region'+str(i)+'.ll exe_IR/')
-    os.system('mv region'+str(i)+'.c exe_source/')
-#######################################################################
-for i in range(1, int(num_region)+1):
-    ir_line =[]
-    counter_region = 0
-    region = open('exe_IR/region'+str(i)+'.ll','r')
-    for line in region:
-        counter_region += 1 
-        ir_line.append(line)
-        if "define" in line:
-            entry_region = counter_region
-        elif "ret" in line:
-            return_region = counter_region
-    sequential = open('concurrent_program.ll','a')
-    sequential.write('region'+str(i)+': \n')
-    for k in range(entry_region, return_region-1):
-        sequential.write(ir_line[k])
-    region.close()
-sequential.close()
-os.system('mv concurrent_program.ll exe_concurrent/')
-'''
-
-
-
-region = open("region_text/p-c.txt", 'r')
+region = open("region_text/deadlock.txt", 'r')
 for line in region:
     if "region" not in line:
         source_r.append(line)
@@ -179,54 +149,91 @@ for i in range(1, int(p_num)+1):
                         appendable = 1
 
                 if appendable == 1 and "}" not in ins[j] and "if" not in ins[j]:
-                        exe_path.append(ins[j])
+                        if "klee" not in ins[j]:                      	
+                                exe_path.append(ins[j])
                         #print (ins[j])
                 else:
                         continue
-        path = open("path_r1.c", "w")
+        path = open("path.c", "w")
         for j in range(0, len(exe_path)):
                 if "wait" in exe_path[j]:
-                        print ("777")
                         exe_path[j] = exe_path[j].replace('printf ("', 'pthread_cond_wait(&')
                         exe_path[j] = exe_path[j].replace('wait");', ');')
                 path.write(exe_path[j])
         path.write('return 0;\n}')
         path.close()
         os.system('mv path.c program/path_'+str(i)+'.c')
+        os.system('clang -Os -S -emit-llvm program/path_'+str(i)+'.c -o program/path_'+str(i)+'.ll')
         k_point = 0
         kquery = []
         exe_path = []
 
-file = open('program/path_2.c')
+file = open('program/path_1.c')
 for line in file:
         if "R1" in line:
                 exe_r1_path.append(line)
+                #print ("exe_r1: \n", line)
         elif "R2" in line:
                 exe_r2_path.append(line)
         else:
-                exe_r1_path.append(line)
-                exe_r2_path.append(line)
-
+                if "klee" not in line:
+                        exe_r1_path.append(line)
+                        exe_r2_path.append(line)
+file.close()
+#print ("exe_r1: \n", exe_r1_path)
 for i in range(1 , int(num_region)+1):
-        executions = open("region_exe_r"+str(i)+".c", "w")
-        #for j in range(0 , len()):
-	
+        executions = open("exe_r"+str(i)+".c", "w")
+        if i == 1:
+                for j in range(0 , len(exe_r1_path)):
+                        executions.write(exe_r1_path[j])
+        else:
+                for j in range(0 , len(exe_r2_path)):
+                        executions.write(exe_r2_path[j])
+        executions.close()
+        os.system('clang -Os -S -emit-llvm exe_r'+str(i)+'.c -o exe_r'+str(i)+'.ll')
+        os.system('mv exe_r'+str(i)+'.ll exe_IR/')
+        os.system('mv exe_r'+str(i)+'.c exe_source/')	
+
+for i in range(1, int(num_region)+1):
+    ir_line =[]
+    counter_region = 0
+    region = open('exe_IR/exe_r'+str(i)+'.ll','r')
+    for line in region:
+        counter_region += 1 
+        ir_line.append(line)
+        if "define" in line:
+            entry_region = counter_region
+        elif "ret" in line:
+            return_region = counter_region
+    sequential = open('concurrent_program.ll','a')
+    sequential.write('region'+str(i)+': \n')
+    for k in range(entry_region, return_region-1):
+        sequential.write(ir_line[k])
+    region.close()
+sequential.close()
+os.system('mv concurrent_program.ll exe_concurrent/')
+
 '''
 file = open("whole_program.ll", "r")
 for line in file:
         program.append(line)
 file.close()
-
+'''
 for i in range(0, len(ValidInputs)):
-        path = open('path.ll', 'w')
+        file = open("program/path_"+str(i+1)+".ll", "r")
+        for line in file:
+                program.append(line)
+        file.close()
+        path = open('path'+str(i+1)+'.ll', 'w')
         for j in range(0, len(program)):
                 if shared_data in program[j] and "global" in program[j] and "common" in program[j]:
                         program[j] = program[j].replace("common local_unnamed_addr global i32 0", "global i32 "+ValidInputs[i]+"")
                 elif shared_data in program[j] and "global" in program[j] and "common" not in program[j]:
                         program[j] = program[j].replace(""+ValidInputs[i-1]+"", ""+ValidInputs[i]+"")
                 path.write(program[j])
-        os.system('mv path.ll path'+str(i+1)+'.ll')
+        #os.system('mv path.ll path'+str(i+1)+'.ll')
         #os.system('clang -S -emit-llvm path'+str(i+1)+'.c -o path'+str(i+1)+'.ll')
         path.close()
+        program = []
 os.system('mv path* program/')
-'''
+

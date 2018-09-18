@@ -1,10 +1,14 @@
 region1:
 	pthread_mutex_lock(&a);
+	usleep(200);
   	pthread_mutex_lock(&b);
+	counter++;
   	pthread_mutex_unlock(&b);
   	pthread_mutex_unlock(&a);
 region2:
 	pthread_mutex_lock(&b);
+	usleep(200);
   	pthread_mutex_lock(&a);
+	counter--;
   	pthread_mutex_unlock(&a);
   	pthread_mutex_unlock(&b);
