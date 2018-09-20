@@ -178,10 +178,11 @@ for i in range(1, 2):
 				break
 			
 		
-		#os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
+		os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
 		os.system('gcc -o answer_ok answer_ok.s -lpthread')
 		#os.system('timeout 3 ./answer_ok')
-		exe_result = subprocess.getoutput('timeout 3 ./answer_ok \n')
+		exe_result = subprocess.getoutput('timeout 1 ./answer_ok \n')
+		#exe_result = subprocess.getoutput('./answer_ok \n')
 		#temp_result = exe_result
 		if (flag > 1) and (temp_result != exe_result):
 			print ("now: ", exe_result)

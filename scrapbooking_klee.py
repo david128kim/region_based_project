@@ -199,7 +199,8 @@ for i in range(1, int(num_region)+1):
     counter_region = 0
     region = open('exe_IR/exe_r'+str(i)+'.ll','r')
     for line in region:
-        counter_region += 1 
+        counter_region += 1
+        #print (''.join(line+';R'+str(i)))
         ir_line.append(line)
         if "define" in line:
             entry_region = counter_region
@@ -208,7 +209,17 @@ for i in range(1, int(num_region)+1):
     sequential = open('concurrent_program.ll','a')
     sequential.write('region'+str(i)+': \n')
     for k in range(entry_region, return_region-1):
-        sequential.write(ir_line[k])
+        '''
+        temp_ir, temp_join = [], []
+        temp_ir.append(ir_line[k])
+        temp_ir.append(' ;R'+str(i))
+        temp_join.append(''.join(temp_ir))
+        print (temp_join)
+        sequential.write(temp_join[0])
+        '''
+        sequential.write(ir_line[k].rstrip('\n')+' ;R'+str(i)+'\n')
+        #print (ir_line[k],';R')
+        #print (''.join(str(ir_line[k])+';R'))
     region.close()
 sequential.close()
 os.system('mv concurrent_program.ll exe_concurrent/')
