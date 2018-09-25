@@ -20,8 +20,24 @@ strwrite = "generate feasible testcase: "
 #test region
 constraints = [[1, 2], [3, 4], [5, 6]]
 recording, filetest, a_tie, b_tie = [] ,[], [], []
-counter, path_amount, file_length, temp_exe_result, counter_DL = 0, 0, 0, 0, 0
+counter, path_amount, file_length, temp_exe_result, counter_DL, HasOrder = 0, 0, 0, 0, 0, 0
+lock_name, lock_1st = "", ""
 
+for i in range(0, int(scrapbooking_klee.num_region)):
+        file = open('exe_IR/exe_r'+str(i+1)+'.ll')
+        for line in file:
+                lock_split = line.split()
+                if "mutex_lock" in line and (lock_1st == ""):
+                        lock_1st = lock_split[7]
+                        break
+                elif "mutex_lock" in line and (lock_1st != ""):
+                        if lock_1st == lock_split[7]:
+                                HasOrder = 1
+                        else:
+                                HasOrder = 0
+                        break
+        file.close()
+print ("Order?: ", HasOrder)
 for k in range(1, 2):
         #testcase = open('testcase'+str(k)+'.ll','w')
         testcase = open('testcase.ll','w')
@@ -33,18 +49,53 @@ for k in range(1, 2):
                 if "region1" not in line and "region2" not in line and "printf" not in line: #unnecessary prune
                         a.append(line)
                         counter_t1 += 1
-                        if ("mutex" in line) or ("signal" in line) or ("wait" in line):
+                        temp_split = line.split()
+                        #if ("mutex" in line) or ("signal" in line) or ("wait" in line):
                         #if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line):	
                         #if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line) or ("mutex" in line) or ("signal" in line):
-                                a.insert(counter_t1+t1_insert_number, "tie")
-                                insert_temp += 1
-                                t1_insert_number += 1
-                                end_tie = counter_t1+t1_insert_number
-#                        elif scrapbooking_klee.shared_data in line and (("mutex" not in line) or ("signal" not in line) or ("wait" not in line)):
-#                                a.insert(counter_t1+t1_insert_number, "tie")
-#                                insert_temp += 1
-#                                t1_insert_number += 1
-#                                end_tie = counter_t1+t1_insert_number	
+                        #if ("mutex_unlock" in line) or ("signal" in line) or ("wait" in line):
+                        if HasOrder == 1:
+                                if "mutex_lock" in line:
+                                        if lock_name == "":
+                                                lock_name = temp_split[7]
+                                                '''			
+                                                if counter_t1+t1_insert_number-1 == 0:
+                                                        continue
+                                                else:
+                                                        a.insert(counter_t1+t1_insert_number-1, "tie")
+                                                        insert_temp += 1
+                                                        t1_insert_number += 1
+                                                        end_tie = counter_t1+t1_insert_number
+                                                '''
+                                        else:
+                                                continue
+                                elif "mutex_unlock" in line or ("signal" in line) or ("wait" in line):
+                                        if "mutex_unlock" in line and temp_split[7] == lock_name:
+                                                lock_name = ""
+                                                a.insert(counter_t1+t1_insert_number, "tie")
+                                                insert_temp += 1
+                                                t1_insert_number += 1
+                                                end_tie = counter_t1+t1_insert_number
+                                        elif "mutex_unlock" in line and temp_split[7] != lock_name:
+                                                continue
+                                        else:
+                                                a.insert(counter_t1+t1_insert_number, "tie")
+                                                insert_temp += 1
+                                                t1_insert_number += 1
+                                                end_tie = counter_t1+t1_insert_number
+
+                        else:
+                                if ("mutex" in line) or ("signal" in line) or ("wait" in line):
+                                        a.insert(counter_t1+t1_insert_number, "tie")
+                                        insert_temp += 1
+                                        t1_insert_number += 1
+                                        end_tie = counter_t1+t1_insert_number
+                        '''
+                                        a.insert(counter_t1+t1_insert_number, "tie")
+                                        insert_temp += 1
+                                        t1_insert_number += 1
+                                        end_tie = counter_t1+t1_insert_number
+                        '''
                 elif "region2" in line:
                        break
         del a[end_tie-1]
@@ -64,18 +115,52 @@ for k in range(1, 2):
                 if "printf" not in line: #unnecessary prune	
                         b.append(line)
                         counter_t2 += 1
-                        if ("mutex" in line) or ("signal" in line) or ("wait" in line):
+                        temp_split = line.split()
+                        #if ("mutex" in line) or ("signal" in line) or ("wait" in line):
                         #if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line):
                         #if (("load" in line or "store" in line) and scrapbooking_klee.shared_data in line) or ("mutex" in line) or ("signal" in line):
+                        #if ("mutex_unlock" in line) or ("signal" in line) or ("wait" in line):
+                        if HasOrder == 1:
+                                if "mutex_lock" in line:
+                                        if lock_name == "":
+                                                lock_name = temp_split[7]
+                                                '''
+                                                if counter_t2+t2_insert_number-1 == 0:
+                                                        continue
+                                                else:
+                                                        b.insert(counter_t2+t2_insert_number-1, "tie")
+                                                        insert_temp += 1
+                                                        t2_insert_number += 1
+                                                        end_tie = counter_t2+t2_insert_number
+                                                '''
+                                        else:
+                                                continue
+                                elif "mutex_unlock" in line or ("signal" in line) or ("wait" in line):
+                                        if "mutex_unlock" in line and temp_split[7] == lock_name:
+                                                lock_name = ""
+                                                b.insert(counter_t2+t2_insert_number, "tie")
+                                                insert_temp += 1
+                                                t2_insert_number += 1
+                                                end_tie = counter_t2+t2_insert_number
+                                        elif "mutex_unlock" in line and temp_split[7] != lock_name:
+                                                continue
+                                        else:
+                                                b.insert(counter_t2+t2_insert_number, "tie")
+                                                insert_temp += 1
+                                                t2_insert_number += 1
+                                                end_tie = counter_t2+t2_insert_number
+                        else:
+                                if ("mutex" in line) or ("signal" in line) or ("wait" in line):
+                                        b.insert(counter_t2+t2_insert_number, "tie")
+                                        insert_temp += 1
+                                        t2_insert_number += 1
+                                        end_tie = counter_t2+t2_insert_number
+                        '''
                                 b.insert(counter_t2+t2_insert_number, "tie")
                                 insert_temp += 1
                                 t2_insert_number += 1
                                 end_tie = counter_t2+t2_insert_number
-#                        elif scrapbooking_klee.shared_data in line and (("mutex" not in line) or ("signal" not in line) or ("wait" not in line)):
-#                                b.insert(counter_t2+t2_insert_number, "tie")
-#                                insert_temp += 1
-#                                t2_insert_number += 1
-#                                end_tie = counter_t2+t2_insert_number
+                        '''
         del b[end_tie-1]
         t2_insert_number -= 1
         #b.insert(len(b), "tie")
@@ -143,13 +228,16 @@ for k in range(1, 2):
 for i in range(1, 2):
 	#while(counter < file_length):
 	while(counter <= (len(a)+len(b)-t1_insert_number-t2_insert_number)):
+		if not temp:
+			print ("temp is empty. ")
+			break
 		generating = open('answer.ll', 'w')
 		for i in range(0,len(a)+len(b)-t1_insert_number-t2_insert_number):
-			if not temp:
-				print ("temp is empty. ")
-				break
-			else:
-				recording.append(temp.pop())
+			#if not temp:
+				#print ("temp is empty. ")
+				#break
+			#else:
+			recording.append(temp.pop())
 			counter += 1
 		if counter == (len(a)+len(b)-t1_insert_number-t2_insert_number):
 			counter = 0
@@ -181,7 +269,9 @@ for i in range(1, 2):
 		os.system('llc -O3 -march=x86-64 answer_ok.ll -o answer_ok.s')
 		os.system('gcc -o answer_ok answer_ok.s -lpthread')
 		#os.system('timeout 3 ./answer_ok')
-		exe_result = subprocess.getoutput('timeout 1 ./answer_ok \n')
+		exe_result = subprocess.getoutput('timeout 0.1 ./answer_ok \n')
+		os.system('cp answer.ll answer_'+str(flag)+'.ll')
+		os.system('cp answer_ok.ll answer_ok_'+str(flag)+'.ll')
 		#exe_result = subprocess.getoutput('./answer_ok \n')
 		#temp_result = exe_result
 		if (flag > 1) and (temp_result != exe_result):

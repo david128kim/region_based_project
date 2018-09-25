@@ -28,7 +28,7 @@ for line in file:
 path_length = len(temp_path1)
 file.close()
 ###############  start point of scapbooking  ##################
-file = open('program/path1.ll')
+file = open('program/path6.ll')
 scrap = open('answer_o.ll','w')
 scrapping = []
 start_counter = 0
@@ -53,7 +53,8 @@ booking = open('answer_o.ll','a')
 counter_ins, counter_load, before_1stBB, counter_temp, counter_call, label_point, phi_point, counter_store, opening_load, counter_re = 0, 1, 0, -1, 0, 0, 0, 0, 0, -1
 load_number, operation_name, assert_answer, temp = "", "", "", ""
 instruction, label, re_instruction, cmp_point, br_label, br_value = [], [], [], [], [], []
-counter_ins += start_counter 
+#counter_ins += start_counter
+counter_ins += 2 
 for line in file:
 	if "load" in line:
 		counter_ins += 1
@@ -232,7 +233,7 @@ for i in range(0, len(re_instruction)):
 scrapbooking.close()
 
 ###########  ending part of scapbooking  ##################
-file = open('program/path1.ll')
+file = open('program/path6.ll')
 scrapbooking = open('answer_ok.ll','a')
 counter, temp_cut, cut = 0, 0, 0
 ending, temp_2 = [], []
@@ -249,7 +250,7 @@ for line in file:
 		break
 file.close()
 
-file = open('program/path1.ll')
+file = open('program/path6.ll')
 for line in file:
 	counter += 1
 	ending.append(line)

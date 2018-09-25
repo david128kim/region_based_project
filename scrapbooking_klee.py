@@ -51,7 +51,7 @@ for i in range(1, int(num_region)+1):
 #region.close()
 #file.close()
 
-region = open("region_text/deadlock.txt", 'r')
+region = open("region_text/p-c.txt", 'r')
 for line in region:
     if "region" not in line:
         source_r.append(line)
@@ -125,8 +125,8 @@ print (end)
 for i in range(1, int(end)):
         temp = subprocess.getoutput('ktest-tool --write-ints klee-last/test00000'+str(i)+'.ktest')
         tmp = temp.split()
-        if "found" not in tmp:
-                ValidInputs.append(tmp[len(tmp)-1])
+        #if "found" not in tmp:
+        ValidInputs.append(tmp[len(tmp)-1])
 #ValidInputs.insert(0, "0")
 print ("valid inputs: ", ValidInputs)
 
@@ -168,7 +168,7 @@ for i in range(1, int(p_num)+1):
         kquery = []
         exe_path = []
 
-file = open('program/path_1.c')
+file = open('program/path_6.c')
 for line in file:
         if "R1" in line:
                 exe_r1_path.append(line)
