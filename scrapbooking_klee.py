@@ -1,9 +1,6 @@
 import os
 import subprocess
 import string
-
-#from app_r1 import execution_path_r1
-#from app_r2 import execution_path_r2
 import app_r1
 import app_r2
 
@@ -40,82 +37,47 @@ for i in range(1, int(num_region)+1):
     region.close()
     os.system('mv region'+str(i)+'.c exe_source/')
 ########################################################################
-#region = open('region'+str(num_region)+'.c', 'w')
-#for k in range(0, len(source_line)):
-#    region.write(source_line[k])
-#region.write('int main(int argc, char **argv) {\n')
-#for line in file:
-#    if "region"+str(int(num_region)-1)+"" not in line:
-#        region.write(line)
-#region.write('return 0;\n}')
-#region.close()
-#file.close()
 
 region = open("region_text/p-c.txt", 'r')
 for line in region:
     if "region" not in line:
         source_r.append(line)
-'''
-klee.write('#include "klee/klee.h"\n')
-for k in range(0, len(source_line)):
-    klee.write(source_line[k])
-    whole.write(source_line[k])
-klee.write('int main(int argc, char **argv) {\n')
-whole.write('int main(int argc, char **argv) {\n')
-for j in range(0, len(local_var)):
-    klee.write(local_var[j])
-    whole.write(local_var[j])
-klee.write('klee_make_symbolic(&'+shared_data+', sizeof('+shared_data+'), "'+shared_data+'");\n')
-for k in range(0, len(source_r)):
-    if "pthread_cond_wait" in source_r[k]:
-        source_r[k] = source_r[k].replace('pthread_cond_wait(&', 'printf ("')
-        source_r[k] = source_r[k].replace(');' , '");')	
-    klee.write(source_r[k])
-    whole.write(source_r[k])
-klee.write('return 0; }\n')
-whole.write('printf("%d", '+shared_data+'); \n')
-whole.write('return 0; }\n')
-klee.close()
-whole.close()
-os.system('clang -Os -S -emit-llvm klee_program.c -o klee_program.ll')
-os.system('clang -Os -S -emit-llvm whole_program.c -o whole_program.ll')
-#os.system('mv whole_program.ll program/')
-os.system('llvm-as klee_program.ll -o klee_program.bc')
-#os.system('klee --libc=uclibc --posix-runtime klee_program.bc')
-os.system('klee -search=dfs -write-kqueries -write-paths klee_program.bc')
-num = subprocess.getoutput('find klee-last/ -type f |wc -l')
-end = (int(num) - 7 + 2) / 2
-for i in range(1, int(end)):
-        temp = subprocess.getoutput('ktest-tool --write-ints klee-last/test00000'+str(i)+'.ktest')
-        tmp = temp.split()
-        if "found" not in tmp:
-                ValidInputs.append(tmp[len(tmp)-1])
-#ValidInputs.insert(0, "0")
-print ("valid inputs: ", ValidInputs)
-'''
-#os.chdir('exe_source')
-#os.system('ls')
-dy_path = open("Itrigger.c", "w")
+
+dy_path_r1 = open("Itrigger_1.c", "w")
 for j in range(0, len(source_line)):
-        dy_path.write(source_line[j])
-#dy_path.write(shared_data+' = '+ValidInputs[3]+';\n')
-dy_path.write('int main(int argc, char **argv) {\n')
+        dy_path_r1.write(source_line[j])
+dy_path_r1.write('int main(int argc, char **argv) {\n')
 for k in range(0, len(local_var)):
-        dy_path.write(local_var[k])
-dy_path.write('klee_make_symbolic(&'+shared_data+', sizeof('+shared_data+'), "'+shared_data+'");\n')
+        dy_path_r1.write(local_var[k])
+dy_path_r1.write('klee_make_symbolic(&'+shared_data+', sizeof('+shared_data+'), "'+shared_data+'");\n')
+os.system('cp Itrigger_1.c Itrigger_2.c')
 for i in range(0, int(num_region)):						##### two region: need to be dynamic (ex: find r?_path.c number) #####
 	file = open("r"+str(i+1)+"_path.c")
-	dy_path = open("Itrigger.c", "a")
+	dy_path_r1 = open("Itrigger_1.c", "a")
 	for line in file:
 		source_path.append(line)
 	for l in range(0, len(source_path)):
 		if "pthread_cond_wait" in source_path[l]:
 			source_path[l] = source_path[l].replace('pthread_cond_wait(&', 'printf ("')
 			source_path[l] = source_path[l].replace(');' , 'wait");')
-		dy_path.write(source_path[l])
+		dy_path_r1.write(source_path[l])
 	source_path = []
-dy_path.write('return 0; }\n')
-dy_path.close()
+for i in range(int(num_region), 0, -1):
+	file = open("r"+str(i)+"_path.c")
+	dy_path_r2 = open("Itrigger_2.c", "a")
+	for line in file:
+		source_path.append(line)
+	for l in range(0, len(source_path)):
+		if "pthread_cond_wait" in source_path[l]:
+			source_path[l] = source_path[l].replace('pthread_cond_wait(&', 'printf ("')
+			source_path[l] = source_path[l].replace(');' , 'wait");')
+		dy_path_r2.write(source_path[l])
+	source_path = []
+dy_path_r1.write('return 0; }\n')
+dy_path_r1.close()
+dy_path_r2.write('return 0; }\n')
+dy_path_r2.close()
+
 os.system('clang -Os -S -emit-llvm Itrigger.c -o Itrigger.ll')
 os.system('llvm-as Itrigger.ll -o Itrigger.bc')
 os.system('klee -search=dfs -write-paths Itrigger.bc')
@@ -168,7 +130,7 @@ for i in range(1, int(p_num)+1):
         kquery = []
         exe_path = []
 
-file = open('program/path_6.c')
+file = open('program/path_1.c')
 for line in file:
         if "R1" in line:
                 exe_r1_path.append(line)
@@ -209,27 +171,11 @@ for i in range(1, int(num_region)+1):
     sequential = open('concurrent_program.ll','a')
     sequential.write('region'+str(i)+': \n')
     for k in range(entry_region, return_region-1):
-        '''
-        temp_ir, temp_join = [], []
-        temp_ir.append(ir_line[k])
-        temp_ir.append(' ;R'+str(i))
-        temp_join.append(''.join(temp_ir))
-        print (temp_join)
-        sequential.write(temp_join[0])
-        '''
         sequential.write(ir_line[k].rstrip('\n')+' ;R'+str(i)+'\n')
-        #print (ir_line[k],';R')
-        #print (''.join(str(ir_line[k])+';R'))
     region.close()
 sequential.close()
 os.system('mv concurrent_program.ll exe_concurrent/')
 
-'''
-file = open("whole_program.ll", "r")
-for line in file:
-        program.append(line)
-file.close()
-'''
 for i in range(0, len(ValidInputs)):
         file = open("program/path_"+str(i+1)+".ll", "r")
         for line in file:
