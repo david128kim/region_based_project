@@ -10,7 +10,7 @@ for line in file:
 	ins.append(line) 
 	temp_split = line.split()
 
-	if ";R2" in ins[0]:
+	if ";R1" in ins[0]:
 		print ("wrong data dependency")
 		break
 	else:

@@ -28,7 +28,7 @@ for line in file:
 path_length = len(temp_path1)
 file.close()
 ###############  start point of scapbooking  ##################
-file = open('program/path1.ll')
+file = open('program/exe_path2_6.ll')
 scrap = open('answer_o.ll','w')
 scrapping = []
 start_counter = 0
@@ -233,7 +233,7 @@ for i in range(0, len(re_instruction)):
 scrapbooking.close()
 
 ###########  ending part of scapbooking  ##################
-file = open('program/path1.ll')
+file = open('program/exe_path2_6.ll')
 scrapbooking = open('answer_ok.ll','a')
 counter, temp_cut, cut = 0, 0, 0
 ending, temp_2 = [], []
@@ -250,7 +250,7 @@ for line in file:
 		break
 file.close()
 
-file = open('program/path1.ll')
+file = open('program/exe_path2_6.ll')
 for line in file:
 	counter += 1
 	ending.append(line)
