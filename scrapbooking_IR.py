@@ -28,7 +28,7 @@ for line in file:
 path_length = len(temp_path1)
 file.close()
 ###############  start point of scapbooking  ##################
-file = open('program/exe_path2_6.ll')
+file = open('program/exe_path1_1.ll')
 scrap = open('answer_o.ll','w')
 scrapping = []
 start_counter = 0
@@ -156,7 +156,7 @@ for line in file:
 				i = 1
 				while (("%" not in load_number) and ("mutex" not in load_number) and i < len(temp_1)):
 					load_number = str(temp_1[i])
-					if "%" in load_number:
+					if "%" in load_number and "mutex" not in load_number:
 						#print "load_number", load_number
 						if "sext" in line or "inttoptr" in line:
 							temp = temp.replace(str(load_number), "%"+str(counter_ins-1))
@@ -233,7 +233,7 @@ for i in range(0, len(re_instruction)):
 scrapbooking.close()
 
 ###########  ending part of scapbooking  ##################
-file = open('program/exe_path2_6.ll')
+file = open('program/exe_path1_1.ll')
 scrapbooking = open('answer_ok.ll','a')
 counter, temp_cut, cut = 0, 0, 0
 ending, temp_2 = [], []
@@ -250,7 +250,7 @@ for line in file:
 		break
 file.close()
 
-file = open('program/exe_path2_6.ll')
+file = open('program/exe_path1_1.ll')
 for line in file:
 	counter += 1
 	ending.append(line)

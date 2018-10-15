@@ -18,7 +18,8 @@ for line in file:
                 break
         source_line.append(line)
 for line in file:
-        if "(" not in line and "{" not in line and "}" not in line and "+" not in line and "-" not in line and "*" not in line and "/" not in line and "return" not in line and shared_data not in line:
+        #if "(" not in line and "{" not in line and "}" not in line and "+" not in line and "-" not in line and "*" not in line and "/" not in line and "return" not in line and shared_data not in line:
+        if "(" not in line and "{" not in line and "}" not in line and "+" not in line and "-" not in line and "=" not in line and "/" not in line and "return" not in line:
                 local_var.append(line)
 file.close()
 
@@ -38,7 +39,7 @@ for i in range(1, int(num_region)+1):
     os.system('mv region'+str(i)+'.c exe_source/')
 ########################################################################
 
-region = open("region_text/p-c.txt", 'r')
+region = open("region_text/din_phil2.txt", 'r')
 for line in region:
     if "region" not in line:
         source_r.append(line)
@@ -93,11 +94,11 @@ for i in range(0, int(num_region)):
 	for j in range(1, int(end)):
 		temp = subprocess.getoutput('ktest-tool --write-ints klee-last/test00000'+str(j)+'.ktest')
 		tmp = temp.split()
-		#if "found" not in tmp:
-		if i == 0:
-			ValidInputs_1.append(tmp[len(tmp)-1])
-		else:
-			ValidInputs_2.append(tmp[len(tmp)-1])
+		if "found" not in tmp:
+			if i == 0:
+				ValidInputs_1.append(tmp[len(tmp)-1])
+			else:
+				ValidInputs_2.append(tmp[len(tmp)-1])
 	#ValidInputs.insert(0, "0")
 	print ("valid inputs: ", ValidInputs_1)
 	print ("valid inputs: ", ValidInputs_2)
@@ -142,7 +143,7 @@ for i in range(0, int(num_region)):
 		exe_path = []
 	ins = []
 
-file = open('program/path_2_6.c')
+file = open('program/path_1_1.c')
 for line in file:
         if "R1" in line:
                 exe_r1_path.append(line)

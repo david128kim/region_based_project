@@ -1,0 +1,20 @@
+region1:
+    if (shared->counter >= shared->end) {
+      return;
+    }
+    shared->array[shared->counter]++;
+    shared->counter++;
+
+    if (shared->counter % 10000 == 0) {
+      printf ("%d\n", shared->counter);
+    }
+region2:
+    if (shared->counter >= shared->end) {
+      return;
+    }
+    shared->array[shared->counter]++;
+    shared->counter++;
+
+    if (shared->counter % 10000 == 0) {
+      printf ("%d\n", shared->counter);
+    }

@@ -22,22 +22,25 @@ constraints = [[1, 2], [3, 4], [5, 6]]
 recording, filetest, a_tie, b_tie = [] ,[], [], []
 counter, path_amount, file_length, temp_exe_result, counter_DL, HasOrder = 0, 0, 0, 0, 0, 0
 lock_name, lock_1st = "", ""
-
+'''
 for i in range(0, int(scrapbooking_klee.num_region)):
         file = open('exe_IR/exe_r'+str(i+1)+'.ll')
         for line in file:
                 lock_split = line.split()
                 if "mutex_lock" in line and (lock_1st == ""):
-                        lock_1st = lock_split[7]
+                        print ("length: ", len(lock_split)-2)
+                        print (lock_split[len(lock_split)-2])
+                        lock_1st = lock_split[len(lock_split)-2]
                         break
                 elif "mutex_lock" in line and (lock_1st != ""):
-                        if lock_1st == lock_split[7]:
+                        if lock_1st == lock_split[len(lock_split)-2]:
                                 HasOrder = 1
                         else:
                                 HasOrder = 0
                         break
         file.close()
 print ("Order?: ", HasOrder)
+'''
 for k in range(1, 2):
         #testcase = open('testcase'+str(k)+'.ll','w')
         testcase = open('testcase.ll','w')
@@ -46,7 +49,7 @@ for k in range(1, 2):
         counter_t1, t1_insert_number, a_tie, a = 0, 0, [], []
         insert_temp = 0
         for line in file:
-                if "region1" not in line and "region2" not in line and "printf" not in line: #unnecessary prune
+                if "region1" not in line and "region2" not in line and "printf" not in line and "llvm.lifetime" not in line: #unnecessary prune
                         a.append(line)
                         counter_t1 += 1
                         temp_split = line.split()
@@ -57,7 +60,7 @@ for k in range(1, 2):
                         if HasOrder == 1:
                                 if "mutex_lock" in line:
                                         if lock_name == "":
-                                                lock_name = temp_split[7]
+                                                lock_name = temp_split[len(lock_split)-2]
                                                 '''			
                                                 if counter_t1+t1_insert_number-1 == 0:
                                                         continue
@@ -70,13 +73,13 @@ for k in range(1, 2):
                                         else:
                                                 continue
                                 elif "mutex_unlock" in line or ("signal" in line) or ("wait" in line):
-                                        if "mutex_unlock" in line and temp_split[7] == lock_name:
+                                        if "mutex_unlock" in line and temp_split[len(lock_split)-2] == lock_name:
                                                 lock_name = ""
                                                 a.insert(counter_t1+t1_insert_number, "tie")
                                                 insert_temp += 1
                                                 t1_insert_number += 1
                                                 end_tie = counter_t1+t1_insert_number
-                                        elif "mutex_unlock" in line and temp_split[7] != lock_name:
+                                        elif "mutex_unlock" in line and temp_split[len(lock_split)-2] != lock_name:
                                                 continue
                                         else:
                                                 a.insert(counter_t1+t1_insert_number, "tie")
@@ -85,7 +88,7 @@ for k in range(1, 2):
                                                 end_tie = counter_t1+t1_insert_number
 
                         else:
-                                if ("mutex" in line) or ("signal" in line) or ("wait" in line):
+                                if ("mutex_lock" in line) or ("mutex_unlock" in line) or ("signal" in line) or ("wait" in line):
                                         a.insert(counter_t1+t1_insert_number, "tie")
                                         insert_temp += 1
                                         t1_insert_number += 1
@@ -112,7 +115,7 @@ for k in range(1, 2):
         counter_t2, t2_insert_number, b_tie, b = 0, 0, [], []	
         insert_temp = 0
         for line in file:
-                if "printf" not in line: #unnecessary prune	
+                if "printf" not in line and "llvm.lifetime" not in line: #unnecessary prune	
                         b.append(line)
                         counter_t2 += 1
                         temp_split = line.split()
@@ -123,7 +126,7 @@ for k in range(1, 2):
                         if HasOrder == 1:
                                 if "mutex_lock" in line:
                                         if lock_name == "":
-                                                lock_name = temp_split[7]
+                                                lock_name = temp_split[len(lock_split)-2]
                                                 '''
                                                 if counter_t2+t2_insert_number-1 == 0:
                                                         continue
@@ -136,13 +139,13 @@ for k in range(1, 2):
                                         else:
                                                 continue
                                 elif "mutex_unlock" in line or ("signal" in line) or ("wait" in line):
-                                        if "mutex_unlock" in line and temp_split[7] == lock_name:
+                                        if "mutex_unlock" in line and temp_split[len(lock_split)-2] == lock_name:
                                                 lock_name = ""
                                                 b.insert(counter_t2+t2_insert_number, "tie")
                                                 insert_temp += 1
                                                 t2_insert_number += 1
                                                 end_tie = counter_t2+t2_insert_number
-                                        elif "mutex_unlock" in line and temp_split[7] != lock_name:
+                                        elif "mutex_unlock" in line and temp_split[len(lock_split)-2] != lock_name:
                                                 continue
                                         else:
                                                 b.insert(counter_t2+t2_insert_number, "tie")
@@ -150,7 +153,7 @@ for k in range(1, 2):
                                                 t2_insert_number += 1
                                                 end_tie = counter_t2+t2_insert_number
                         else:
-                                if ("mutex" in line) or ("signal" in line) or ("wait" in line):
+                                if ("mutex_lock" in line) or ("mutex_unlock" in line) or ("signal" in line) or ("wait" in line):
                                         b.insert(counter_t2+t2_insert_number, "tie")
                                         insert_temp += 1
                                         t2_insert_number += 1
