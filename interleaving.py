@@ -3,14 +3,11 @@ import subprocess
 import string
 import itertools
 import time
-#from app_r1 import execution_path_r1
-#from app_r2 import execution_path_r2
-#import scrapbooking_source
 import scrapbooking_klee
 
 interleaving, a, b, temp, old_order = [], [], [], [], ()
 combination = {}
-counter_t1, counter_t2, t1_insert_number, t2_insert_number = 0, 0, 0, 0
+counter_t1, counter_t2, t1_insert_number, t2_insert_number, end_tie = 0, 0, 0, 0, 0
 strthread1 = "SVA from thread 1: "
 strthread2 = "SVA from thread 2: "
 strmerge = "merge two thread function to main: "
@@ -41,6 +38,7 @@ for i in range(0, int(scrapbooking_klee.num_region)):
         file.close()
 print ("Order?: ", HasOrder)
 '''
+
 for k in range(1, 2):
         #testcase = open('testcase'+str(k)+'.ll','w')
         testcase = open('testcase.ll','w')
@@ -88,7 +86,9 @@ for k in range(1, 2):
                                                 end_tie = counter_t1+t1_insert_number
 
                         else:
-                                if ("mutex_lock" in line) or ("mutex_unlock" in line) or ("signal" in line) or ("wait" in line):
+                                #if ("mutex_lock" in line) or ("mutex_unlock" in line) or ("signal" in line) or ("wait" in line):
+                                #if "load" in line or "store" in line:
+                                if "store" in line:
                                         a.insert(counter_t1+t1_insert_number, "tie")
                                         insert_temp += 1
                                         t1_insert_number += 1
@@ -153,7 +153,9 @@ for k in range(1, 2):
                                                 t2_insert_number += 1
                                                 end_tie = counter_t2+t2_insert_number
                         else:
-                                if ("mutex_lock" in line) or ("mutex_unlock" in line) or ("signal" in line) or ("wait" in line):
+                                #if ("mutex_lock" in line) or ("mutex_unlock" in line) or ("signal" in line) or ("wait" in line):
+                                #if "load" in line or "store" in line:
+                                if "store" in line:
                                         b.insert(counter_t2+t2_insert_number, "tie")
                                         insert_temp += 1
                                         t2_insert_number += 1

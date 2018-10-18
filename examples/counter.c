@@ -1,25 +1,3 @@
-/*
-copyright 2005 Allen B. Downey
-
-    This file contains an example program from The Little Book of
-    Semaphores, available from Green Tea Press, greenteapress.com
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, see http://www.gnu.org/licenses/gpl.html
-    or write to the Free Software Foundation, Inc., 51 Franklin St, 
-    Fifth Floor, Boston, MA  02110-1301  USA
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -128,12 +106,11 @@ void check_array (Shared *shared)
   printf ("%d errors.\n", errors);
 }
 
-int main ()
-{
+int main (){
   int i;
   pthread_t child[NUM_CHILDREN];
 
-  Shared *shared = make_shared (100000000);
+  Shared *shared = make_shared (10);
 
   for (i=0; i<NUM_CHILDREN; i++) {
     child[i] = make_thread (entry, shared);

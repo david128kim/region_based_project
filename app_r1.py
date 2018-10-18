@@ -8,7 +8,7 @@ from tree import Tree
 
 tree = Tree()
 
-file = open("region_text/din_phil2.txt")
+file = open("region_text/p-c-lock.txt")
 region_path = open("r1_path.c", "w")
 treeID, height, brackets_match, branch_boundrary, counter_if, execution_path_r1, counter_bp, fork = 0, 0, 0, 0, 0, 0, 0, 0
 info, node_height, branch_layer, branch_point, branch_leaf, breakpoint, dfs, dfs_temp, cond_num, if_layer, branch_type = [], [], [], [], [], [], [], [], [], [], []
