@@ -1,6 +1,6 @@
 region1:
 		pthread_mutex_lock(&m);
-    		while (num == 10) {
+    		while (num >= 10) {
       			pthread_cond_wait(&empty, &m);
       		}
     		num++;
@@ -10,7 +10,7 @@ region1:
     		i++;
 region2:
 		pthread_mutex_lock(&m);
-    		while (num == 0) {
+    		while (num <= 0) {
       			pthread_cond_wait(&full, &m);
       		}
     		total=total+j;
