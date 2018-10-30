@@ -78,8 +78,9 @@ dy_path_r2.write('return 0; }\n')
 dy_path_r2.close()
 
 for i in range(0, int(num_region)):
-	os.system('clang -Os -S -emit-llvm Itrigger_'+str(i+1)+'.c -o Itrigger_'+str(i+1)+'.ll')
-	os.system('llvm-as Itrigger_'+str(i+1)+'.ll -o Itrigger_'+str(i+1)+'.bc')
+	#os.system('clang -Os -S -emit-llvm Itrigger_'+str(i+1)+'.c -o Itrigger_'+str(i+1)+'.ll')
+	#os.system('llvm-as Itrigger_'+str(i+1)+'.ll -o Itrigger_'+str(i+1)+'.bc')
+	os.system('clang -emit-llvm -g -c Itrigger_'+str(i+1)+'.c -o Itrigger_'+str(i+1)+'.bc')
 	os.system('klee -search=dfs -write-paths Itrigger_'+str(i+1)+'.bc')
 	num = subprocess.getoutput('find klee-last/ -type f |wc -l')
 	end = (int(num) - 7 + 2) / 2
@@ -105,6 +106,7 @@ for i in range(0, int(num_region)):
 		for line in file:
 			kquery.append(line)
 		file.close()
+		print ("kquery: ", kquery)
 		for j in range(0, len(ins)):
 			if "num" in ins[j] and "if" in ins[j]:
 				if "0" in kquery[k_point]:

@@ -1,6 +1,6 @@
 region1:
     	while (i < N){
-    		if (num > 0) {
+    		if (num >= 10) {
       			pthread_cond_wait(&empty, &m);
       		}
     		num++;
@@ -10,7 +10,7 @@ region1:
       	}
 region2:
   	while (j < N){  		
-    		if (num == 0) {
+    		if (num <= 0) {
       			pthread_cond_wait(&full, &m);
       		}
     		total=total+j;

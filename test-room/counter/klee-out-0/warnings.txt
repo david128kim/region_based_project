@@ -1,0 +1,2 @@
+KLEE: WARNING: undefined reference to function: check_malloc
+KLEE: WARNING ONCE: calling external: check_malloc(16) at /home/kim-llvm/region_based_project/test-room/counter.c:17

@@ -1,0 +1,6 @@
+Error: failed external call: check_malloc
+File: /home/kim-llvm/region_based_project/test-room/counter.c
+Line: 17
+assembly.ll line: 31
+Stack: 
+	#000000031 in main (=1, =10099888) at /home/kim-llvm/region_based_project/test-room/counter.c:17
