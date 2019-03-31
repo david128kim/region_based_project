@@ -13,8 +13,6 @@ int main (int argc, char **argv) {
 	counter++;			//R1
 	array[counter]++;		//R2
         counter++;			//R2
-	array[counter]++;               //R3
-        counter++;                      //R3
 	printf("%d\n", array[counter]);
 	return 0;
 }

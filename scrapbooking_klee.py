@@ -4,7 +4,7 @@ import string
 #import app_r1
 #import app_r2
 
-ValidInputs, Inputs_Index, Region_Index,  source_line, source_r, ir_line, local_var, program, source_path, ins, kquery, exe_path, exe_r1_path, exe_r2_path = [], [], [], [], [], [], [], [], [], [], [], [], [], []
+ValidInputs, Inputs_Index, Region_Index,  source_line, source_r, ir_line, local_var, program, source_path, ins, kquery, exe_path, exe_r1_path, exe_r2_path, exe_r3_path, exe_r4_path = [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
 region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region, k_point, appendable = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
 program_name = input("Please key in your program name: \n")
 shared_data = input("Please key in your shared data name: \n")
@@ -79,7 +79,7 @@ dy_path_r2.write('return 0; }\n')
 dy_path_r2.close()
 '''
 ###################################     manaul insert point     #####################################
-os.system('cp region_text/counter/counter_ext.c Itrigger_1.c')
+#os.system('cp region_text/counter/counter_ext.c Itrigger_1.c')
 I_num = subprocess.getoutput('find -name Itrigger_* -type f |wc -l')
 for i in range(0, int(I_num)):
 	#os.system('clang -Os -S -emit-llvm Itrigger_'+str(i+1)+'.c -o Itrigger_'+str(i+1)+'.ll')
@@ -153,7 +153,10 @@ for i in range(0, int(I_num)):
 				exe_r1_path.append(line)
 			elif "R2" in line:
 				exe_r2_path.append(line)
-			#####	circling more than 2 regions need extend from here	#####
+			elif "R3" in line:
+				exe_r3_path.append(line)
+			elif "R4" in line:
+				exe_r4_path.append(line)
 			'''
         		else:
                 		if "klee" not in line:
@@ -161,6 +164,7 @@ for i in range(0, int(I_num)):
                         		exe_r2_path.append(line)
 			'''
 		file.close()
+		print (exe_r3_path)
 		sequential = open('concurrent_'+str(i+1)+'_'+str(j)+'.c','w')
 		#sequential.write('region 1: \n')
 		for k in range(0 , len(exe_r1_path)):
@@ -170,6 +174,13 @@ for i in range(0, int(I_num)):
 		for k in range(0 , len(exe_r2_path)):
 			sequential.write(exe_r2_path[k])
 		Region_Index.append(len(exe_r2_path))
+		#if num_region == 3:
+		for k in range(0 , len(exe_r3_path)):
+			sequential.write(exe_r3_path[k])
+		Region_Index.append(len(exe_r3_path))
+		for k in range(0 , len(exe_r4_path)):
+			sequential.write(exe_r4_path[k])
+		Region_Index.append(len(exe_r4_path))
 		#######	set branch condition here to match over 2 regions cases	#######
 		sequential.close()	
 		os.system('mv concurrent_'+str(i+1)+'_'+str(j)+'.c exe_concurrent/')
