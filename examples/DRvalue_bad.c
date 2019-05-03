@@ -3,7 +3,8 @@
 #include <assert.h>
 int Global = 10;
 void *Thread1(void *x) {
-  Global *= 2;
+  //Global *= 2;
+  Global += 10;
   return x;
 }
 void *Thread2(void *y) {

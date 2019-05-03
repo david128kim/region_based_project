@@ -4,9 +4,9 @@ import string
 #import app_r1
 #import app_r2
 
-ValidInputs, Inputs_Index, Region_Index,  source_line, source_r, ir_line, local_var, program, source_path, ins, kquery, exe_path, exe_r1_path, exe_r2_path, exe_r3_path, exe_r4_path = [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
-region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region, k_point, appendable = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
-program_name = input("Please key in your program name: \n")
+temp_ins, loop_body, ValidInputs, Inputs_Index, Region_Index,  source_line, source_r, ir_line, local_var, program, source_path, ins, kquery, exe_path, exe_r1_path, exe_r2_path, exe_r3_path, exe_r4_path = [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
+region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region, k_point, appendable, brackets, is_loop = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0
+#program_name = input("Please key in your program name: \n")
 shared_data = input("Please key in your shared data name: \n")
 num_region = input("How many regions do you circle: \n")
 #file = open(program_name)
@@ -78,13 +78,47 @@ dy_path_r1.close()
 dy_path_r2.write('return 0; }\n')
 dy_path_r2.close()
 '''
+###################################	handle exceptional condition (e.g. while-loop, wait(), loop simplification)	######################################
+I_num = subprocess.getoutput('find -name Itrigger_* -type f |wc -l')
+file = open('Itrigger_'+str(I_num)+'.c')
+klee = open('kleer.c', 'w')
+for line in file:
+	if "{" in line and "while" in line:
+		brackets += 1
+		#if "while" in line:
+		is_loop = 1
+		line = line.replace("while", "if")
+		line = line.replace("//", "//while ")
+		#print (line)
+		loop_body.append(line)
+		temp_ins.append(line)
+	elif "}" in line and is_loop == 1:
+		brackets -= 1
+		#if is_loop == 1:
+		loop_body.append(line)
+		if brackets == 0:
+			is_loop = 0
+		temp_ins.append(line)
+	elif brackets != 0 and is_loop != 0:
+		if "pthread_cond_wait" in line:
+			line = line.replace('pthread_cond_wait(&', 'printf ("')
+			line = line.replace(');' , 'wait");')
+		temp_ins.append(line)
+		loop_body.append(line)
+	else:
+		temp_ins.append(line)
+file.close()
+for i in range(0, len(temp_ins)):
+	klee.write(temp_ins[i])
+klee.close()
+print ("loop_body: ", loop_body)
 ###################################     manaul insert point     #####################################
 #os.system('cp region_text/counter/counter_ext.c Itrigger_1.c')
-I_num = subprocess.getoutput('find -name Itrigger_* -type f |wc -l')
+#I_num = subprocess.getoutput('find -name Itrigger_* -type f |wc -l')
 for i in range(0, int(I_num)):
 	#os.system('clang -Os -S -emit-llvm Itrigger_'+str(i+1)+'.c -o Itrigger_'+str(i+1)+'.ll')
 	#os.system('llvm-as Itrigger_'+str(i+1)+'.ll -o Itrigger_'+str(i+1)+'.bc')
-	os.system('clang -emit-llvm -g -c Itrigger_'+str(i+1)+'.c -o Itrigger'+str(i+1)+'.bc')
+	os.system('clang -emit-llvm -g -c -w Itrigger_'+str(i+1)+'.c -o Itrigger'+str(i+1)+'.bc')
 	os.system('klee -search=dfs -write-paths Itrigger'+str(i+1)+'.bc')
 	num = subprocess.getoutput('find klee-last/ -type f |wc -l')
 	end = (int(num) - 7 + 2) / 2
@@ -185,9 +219,9 @@ for i in range(0, int(I_num)):
 		sequential.close()	
 		os.system('mv concurrent_'+str(i+1)+'_'+str(j)+'.c exe_concurrent/')
 
-print ("region index: ", Region_Index)
-print ("ValidInputs: ", ValidInputs)
-print ("Inputs_Index", Inputs_Index)
+#print ("region index: ", Region_Index)
+#print ("ValidInputs: ", ValidInputs)
+#print ("Inputs_Index", Inputs_Index)
 '''			
 for i in range(1 , int(num_region)+1):
         executions = open("exe_r"+str(i)+".c", "w")

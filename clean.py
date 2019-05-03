@@ -2,9 +2,9 @@ import os
 
 os.system('rm answer*')
 os.system('rm exe_r*')
-os.system('rm Itrigger*')
 os.system('rm r1_path*')
 os.system('rm r2_path*')
+os.system('rm interleave*')
 os.system('rm region1_klee*')
 os.system('rm region2_klee*')
 os.system('cd exe_IR && rm r*')
