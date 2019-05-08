@@ -3,7 +3,15 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-int array[10];
-counter = 0;
+#define N 3
+int num;
+int total;
+int flag;
+pthread_mutex_t m;
+pthread_cond_t empty, full;
 
 int main(){
+int i,j;
+i = 0;
+j = 0;
+

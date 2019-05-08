@@ -5,7 +5,7 @@ import string
 #import app_r2
 
 temp_ins, loop_body, ValidInputs, Inputs_Index, Region_Index,  source_line, source_r, ir_line, local_var, program, source_path, ins, kquery, exe_path, exe_r1_path, exe_r2_path, exe_r3_path, exe_r4_path = [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
-region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region, k_point, appendable, brackets, is_loop = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0
+region_combination, counter_r1, entry_r1, return_r1, counter_r2, entry_r2, return_r2, num_ins, region_flag, entry_region, return_region, counter_region, k_point, appendable, brackets, is_loop, cond_wait = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0
 #program_name = input("Please key in your program name: \n")
 shared_data = input("Please key in your shared data name: \n")
 num_region = input("How many regions do you circle: \n")
@@ -85,24 +85,39 @@ klee = open('kleer.c', 'w')
 for line in file:
 	if "{" in line and "while" in line:
 		brackets += 1
-		#if "while" in line:
 		is_loop = 1
 		line = line.replace("while", "if")
-		line = line.replace("//", "//while ")
-		#print (line)
+		line = line.replace("//", "//entering while   ")
 		loop_body.append(line)
 		temp_ins.append(line)
 	elif "}" in line and is_loop == 1:
 		brackets -= 1
-		#if is_loop == 1:
-		loop_body.append(line)
 		if brackets == 0:
 			is_loop = 0
+			line = line.replace("//", "//breaking while   ")
+		loop_body.append(line)	
 		temp_ins.append(line)
+		if cond_wait != 1:
+			temp_ins.extend(loop_body)
+			print ("loop_body: ", loop_body)
+		else:
+			continue
+		loop_body = []
+		cond_wait = 0
 	elif brackets != 0 and is_loop != 0:
+		cond_wait = 1
 		if "pthread_cond_wait" in line:
+			'''
 			line = line.replace('pthread_cond_wait(&', 'printf ("')
-			line = line.replace(');' , 'wait");')
+			line = line.replace(');' , ' wait");')
+			'''
+			### conditional wait examples: pthread_cond_wait(&full, &m); ###
+			
+			temp_wait = line.split()
+			temp_wait = temp_wait[0].lstrip('pthread_cond_wait(').rstrip(',')
+			line = line.replace('pthread_cond_wait('+temp_wait+', ', 'pthread_mutex_unlock(')
+			line = line.replace('//', '// cond_wait '+temp_wait+' ')
+			print (line)
 		temp_ins.append(line)
 		loop_body.append(line)
 	else:
@@ -111,15 +126,12 @@ file.close()
 for i in range(0, len(temp_ins)):
 	klee.write(temp_ins[i])
 klee.close()
-print ("loop_body: ", loop_body)
 ###################################     manaul insert point     #####################################
-#os.system('cp region_text/counter/counter_ext.c Itrigger_1.c')
-#I_num = subprocess.getoutput('find -name Itrigger_* -type f |wc -l')
 for i in range(0, int(I_num)):
-	#os.system('clang -Os -S -emit-llvm Itrigger_'+str(i+1)+'.c -o Itrigger_'+str(i+1)+'.ll')
-	#os.system('llvm-as Itrigger_'+str(i+1)+'.ll -o Itrigger_'+str(i+1)+'.bc')
-	os.system('clang -emit-llvm -g -c -w Itrigger_'+str(i+1)+'.c -o Itrigger'+str(i+1)+'.bc')
-	os.system('klee -search=dfs -write-paths Itrigger'+str(i+1)+'.bc')
+	#os.system('clang -emit-llvm -g -c -w Itrigger_'+str(i+1)+'.c -o Itrigger'+str(i+1)+'.bc')
+	#os.system('klee -search=dfs -write-paths Itrigger'+str(i+1)+'.bc')
+	os.system('clang -emit-llvm -g -c -w kleer.c -o kleer.bc')
+	os.system('klee -search=dfs -write-paths kleer.bc')
 	num = subprocess.getoutput('find klee-last/ -type f |wc -l')
 	end = (int(num) - 7 + 2) / 2
 	for j in range(1, int(end)):
@@ -134,11 +146,12 @@ for i in range(0, int(I_num)):
 			'''
 			ValidInputs.append(tmp[len(tmp)-1])
 	Inputs_Index.append(len(ValidInputs))
+	print ("valid inputs: ", ValidInputs)
 	'''
 	print ("valid inputs: ", ValidInputs_1)
 	print ("valid inputs: ", ValidInputs_2)
 	'''
-	file = open('Itrigger_'+str(i+1)+'.c')
+	file = open('kleer.c')
 	for line in file:
 		ins.append(line)
 	file.close()
@@ -165,10 +178,16 @@ for i in range(0, int(I_num)):
 				continue
 		path = open("path.c", "w")
 		for j in range(0, len(exe_path)):
+			'''
 			if "wait" in exe_path[j]:
 				exe_path[j] = exe_path[j].replace('printf ("', 'pthread_cond_wait(&')
 				exe_path[j] = exe_path[j].replace('wait");', ');')
+			'''
 			path.write(exe_path[j])
+			
+			if "int main" in exe_path[j]:
+				path.write(shared_data+'= '+ValidInputs[k-1]+';	//R1 \n')
+			
 		#path.write('return 0;\n}')
 		path.write('}')
 		path.close()
@@ -183,14 +202,15 @@ for i in range(0, int(I_num)):
 	for j in range(1, int(p_num)+1):
 		file = open('program/path_'+str(i+1)+'_'+str(j)+'.c')
 		for line in file:
-			if "R1" in line:
-				exe_r1_path.append(line)
-			elif "R2" in line:
-				exe_r2_path.append(line)
-			elif "R3" in line:
-				exe_r3_path.append(line)
-			elif "R4" in line:
-				exe_r4_path.append(line)
+			if "printf" not in line:
+				if "R1" in line:
+					exe_r1_path.append(line)
+				elif "R2" in line:
+					exe_r2_path.append(line)
+				elif "R3" in line:
+					exe_r3_path.append(line)
+				elif "R4" in line:
+					exe_r4_path.append(line)
 			'''
         		else:
                 		if "klee" not in line:
@@ -198,25 +218,38 @@ for i in range(0, int(I_num)):
                         		exe_r2_path.append(line)
 			'''
 		file.close()
-		print (exe_r3_path)
+		#print (exe_r3_path)
 		sequential = open('concurrent_'+str(i+1)+'_'+str(j)+'.c','w')
 		#sequential.write('region 1: \n')
+		#sequential.write(shared_data+'= '+ValidInputs[j-1]+';\n')
 		for k in range(0 , len(exe_r1_path)):
+			if k == len(exe_r1_path)-1:
+				exe_r1_path[k] = exe_r1_path[k].replace('//R1', '//R1 End')	
 			sequential.write(exe_r1_path[k])
 		Region_Index.append(len(exe_r1_path))
 		#sequential.write('region 2: \n')
 		for k in range(0 , len(exe_r2_path)):
+			if k == len(exe_r2_path)-1:
+				exe_r2_path[k] = exe_r2_path[k].replace('//R2', '//R2 End')
 			sequential.write(exe_r2_path[k])
 		Region_Index.append(len(exe_r2_path))
 		#if num_region == 3:
 		for k in range(0 , len(exe_r3_path)):
+			if k == len(exe_r3_path)-1:
+				exe_r3_path[k] = exe_r3_path[k].replace('//R3', '//R3 End')
 			sequential.write(exe_r3_path[k])
 		Region_Index.append(len(exe_r3_path))
 		for k in range(0 , len(exe_r4_path)):
+			if k == len(exe_r4_path)-1:
+				exe_r4_path[k] = exe_r4_path[k].replace('//R4', '//R4 End')
 			sequential.write(exe_r4_path[k])
 		Region_Index.append(len(exe_r4_path))
 		#######	set branch condition here to match over 2 regions cases	#######
-		sequential.close()	
+		sequential.close()
+		exe_r1_path = []
+		exe_r2_path = []	
+		exe_r3_path = []
+		exe_r4_path = []
 		os.system('mv concurrent_'+str(i+1)+'_'+str(j)+'.c exe_concurrent/')
 
 #print ("region index: ", Region_Index)
