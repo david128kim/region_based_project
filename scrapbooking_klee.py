@@ -184,10 +184,11 @@ for i in range(0, int(I_num)):
 				exe_path[j] = exe_path[j].replace('wait");', ');')
 			'''
 			path.write(exe_path[j])
-			
+			######	import valid inputs	######
+			'''	
 			if "int main" in exe_path[j]:
 				path.write(shared_data+'= '+ValidInputs[k-1]+';	//R1 \n')
-			
+			'''
 		#path.write('return 0;\n}')
 		path.write('}')
 		path.close()
