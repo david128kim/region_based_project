@@ -17,20 +17,24 @@ t_start = time.time()
 for i in range(1, 2):
 	if int(scrapbooking_klee.I_num) < i:
 		break
-	#for j in range(1, int(scrapbooking_klee.p_num)+1):
-	for j in range(1, 2):
+	for j in range(1, int(scrapbooking_klee.p_num)+1):
+	#for j in range(1, 2):
 		t_analyzing = time.time()
 		testcase = open('testcase.c','w')
 		########	only for test _1_2
-		#file = open('exe_concurrent/concurrent_'+str(i)+'_'+str(j)+'.c', 'r')
-		file = open('exe_concurrent/concurrent_1_3.c', 'r')
+		file = open('exe_concurrent/concurrent_'+str(i)+'_'+str(j)+'.c', 'r')
+		#file = open('exe_concurrent/concurrent_1_3.c', 'r')
 		for line in file:
 			Region_Text.append(line)
 			count_src += 1
 			if "mutex_lock" in line or "mutex_unlock" in line or "signal" in line or "wait" in line or "End" in line:
 				Region_Text.insert(count_src + insert_num, "tie")
 				insert_num += 1
-				
+			'''
+			elif "mutex_lock" not in scrapbooking_klee.temp_ins or "mutex_unlock" not in scrapbooking_klee.temp_ins or "signal" not in scrapbooking_klee.temp_ins or "wait" not in scrapbooking_klee.temp_ins or scrapbooking_klee.shared_data in line:
+				Region_Text.insert(count_src + insert_num, "tie")
+				insert_num += 1	
+			'''
 		print ("tie:", Region_Text)
 		if "tie" in Region_Text:
 			if "tie" in Region_Text[len(Region_Text)-1]:
@@ -138,7 +142,7 @@ for i in range(1, 2):
 				print ("********Examining interleave", p_flag)
 				print ("		 ", DL_filter)
 				print ("===================================================================\n")
-				#break
+				break
 			#'''
 			elif "inexistent" in DL_filter and "deadlock" not in DL_filter:
 				print ("now exclude bug-unrelated interleaving......")
@@ -158,10 +162,17 @@ for i in range(1, 2):
 						print ("		We find a bug!	Error symbolic state: ", exe_result)
 						print ("===================================================================\n")
 					else:
-						print ("===================================================================")
-						print ("********Examining interleave", p_flag)
-						print ("                It is the first new symbolic state: ", exe_result)
-						print ("===================================================================\n")
+						if "dump" in exe_result or "fault" in exe_result:
+							print ("===================================================================")
+							print ("********Examining interleave", p_flag)
+							print ("                It is the crash state: ", exe_result)
+							print ("===================================================================\n")
+							break
+						else:
+							print ("===================================================================")
+							print ("********Examining interleave", p_flag)
+							print ("                It is the first new symbolic state: ", exe_result)
+							print ("===================================================================\n")
 					states.append(exe_result)
 					dr_num += str(p_flag)
 					dr_num += ", "	

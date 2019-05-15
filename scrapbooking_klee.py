@@ -117,7 +117,7 @@ for line in file:
 			temp_wait = temp_wait[0].lstrip('pthread_cond_wait(').rstrip(',')
 			line = line.replace('pthread_cond_wait('+temp_wait+', ', 'pthread_mutex_unlock(')
 			line = line.replace('//', '// cond_wait '+temp_wait+' ')
-			print (line)
+			#print (line)
 		temp_ins.append(line)
 		loop_body.append(line)
 	else:
@@ -155,15 +155,17 @@ for i in range(0, int(I_num)):
 	for line in file:
 		ins.append(line)
 	file.close()
+	#print ("ins: ", ins)
 	p_num = subprocess.getoutput('find klee-last/ -name *.path -type f |wc -l')
 	for k in range(1, int(p_num)+1):
 		file = open('klee-last/test00000'+str(k)+'.path')
 		for line in file:
 			kquery.append(line)
 		file.close()
-		#print ("kquery: ", kquery)
+		print ("kquery: ", kquery)
 		for j in range(0, len(ins)):
-			if "num" in ins[j] and "if" in ins[j]:
+			#if "num" in ins[j] and "if" in ins[j]:
+			if shared_data in ins[j] and "if" in ins[j]:
 				if "0" in kquery[k_point]:
 					appendable = 0
 				k_point += 1
@@ -176,6 +178,8 @@ for i in range(0, int(I_num)):
 				#print (ins[j])
 			else:
 				continue
+			#print (ins[j])
+		#print ("exe_path: ", exe_path)
 		path = open("path.c", "w")
 		for j in range(0, len(exe_path)):
 			'''

@@ -106,8 +106,8 @@ for line in file:
 		'''
 		continue
 	#print (line)
-	print ("SIG: ", sig_wait)
-	print ("region_num: ", region_num)
+	#print ("SIG: ", sig_wait)
+	#print ("region_num: ", region_num)
 file.close()
 #if ";R2" in ins[0]:
 	#print ("different thread order")
