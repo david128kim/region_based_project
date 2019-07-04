@@ -162,7 +162,7 @@ for i in range(0, int(I_num)):
 		for line in file:
 			kquery.append(line)
 		file.close()
-		print ("kquery: ", kquery)
+		#print ("kquery: ", kquery)
 		for j in range(0, len(ins)):
 			#if "num" in ins[j] and "if" in ins[j]:
 			if shared_data in ins[j] and "if" in ins[j]:

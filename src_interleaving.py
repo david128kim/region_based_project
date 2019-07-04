@@ -30,11 +30,11 @@ for i in range(1, 2):
 			if "mutex_lock" in line or "mutex_unlock" in line or "signal" in line or "wait" in line or "End" in line:
 				Region_Text.insert(count_src + insert_num, "tie")
 				insert_num += 1
-			'''
+			
 			elif "mutex_lock" not in scrapbooking_klee.temp_ins or "mutex_unlock" not in scrapbooking_klee.temp_ins or "signal" not in scrapbooking_klee.temp_ins or "wait" not in scrapbooking_klee.temp_ins or scrapbooking_klee.shared_data in line:
 				Region_Text.insert(count_src + insert_num, "tie")
 				insert_num += 1	
-			'''
+			
 		print ("tie:", Region_Text)
 		if "tie" in Region_Text:
 			if "tie" in Region_Text[len(Region_Text)-1]:
@@ -111,13 +111,14 @@ for i in range(1, 2):
 			generating = open('interleave-'+str(p_flag)+'.c', 'a')
 			generating.write(scrapbooking_klee.shared_data+'= '+scrapbooking_klee.ValidInputs[j-1]+'; \n')
 			'''
-			##########	Insert Valid Inputs here	##########
-			if "[" in scrapbooking_klee.shared_data:
+			##########      Insert Valid Inputs here        ##########
+			print ("p_num: ", scrapbooking_klee.p_num)
+			if scrapbooking_klee.p_num == 1:
 				continue
-			else:
-				generating.write("int "+scrapbooking_klee.shared_data+"="+scrapbooking_klee.ValidInputs[(i-1)*int(scrapbooking_klee.p_num)+j]+"; \n")
+			else: 
+				generating.write(scrapbooking_klee.shared_data+'= '+scrapbooking_klee.ValidInputs[j-1]+'; \n')
 			##########
-			'''	
+			'''
 			for m in range(0, len(Region_Text)):
 				recording.append(permutation.pop())
 				p_count += 1
@@ -142,7 +143,8 @@ for i in range(1, 2):
 				print ("********Examining interleave", p_flag)
 				print ("		 ", DL_filter)
 				print ("===================================================================\n")
-				break
+				os.system('cp interleave-'+str(p_flag)+'.c exe_concurrent/interleaving-'+str(p_flag)+'_'+str(j)+'.c')
+				#break
 			#'''
 			elif "inexistent" in DL_filter and "deadlock" not in DL_filter:
 				print ("now exclude bug-unrelated interleaving......")
@@ -167,7 +169,7 @@ for i in range(1, 2):
 							print ("********Examining interleave", p_flag)
 							print ("                It is the crash state: ", exe_result)
 							print ("===================================================================\n")
-							break
+							#break
 						else:
 							print ("===================================================================")
 							print ("********Examining interleave", p_flag)

@@ -26,15 +26,17 @@ j = 0;
 
 /* put circled region here */
 	/* region 1 */
-    	while (num > 0) 			//R1
+    	while (num > 0) { 			//R1
       		pthread_cond_wait(&empty, &m);	//R1
+	}					//R1
     	num++;					//R1
     	printf ("produce ....%d\n", i);		//R1
     	pthread_cond_signal(&full);		//R1
     	i++;					//R1
 	/* region 2 */
-    	while (num == 0) 			//R2
+    	while (num == 0) { 			//R2
       		pthread_cond_wait(&full, &m);	//R2
+	}					//R2
     	total=total+j;				//R2
     	printf("total ....%ld\n",total);	//R2
     	num--;					//R2
